@@ -1,0 +1,129 @@
+module uefi::status::error;
+
+// Errors
+faultdef
+    NO_FAULT,
+    LOAD_ERROR,
+    INVALID_PARAMETER,
+    UNSUPPORTED,
+    BAD_BUFFER_SIZE,
+    BUFFER_TOO_SMALL,
+    NOT_READY,
+    DEVICE_ERROR,
+    WRITE_PROTECTED,
+    OUT_OF_RESOURCES,
+    VOLUME_CORRUPTED,
+    VOLUME_FULL,
+    NO_MEDIA,
+    MEDIA_CHANGED,
+    NOT_FOUND,
+    ACCESS_DENIED,
+    NO_RESPONSE,
+    NO_MAPPING,
+    TIMEOUT,
+    NOT_STARTED,
+    ALREADY_STARTED,
+    ABORTED,
+    ICMP_ERROR,
+    TFTP_ERROR,
+    PROTOCOL_ERROR,
+    INCOMPATIBLE_VERSION,
+    SECURITY_VIOLATION,
+    CRC_ERROR,
+    END_OF_MEDIA,
+    UNKNOWN_29,   /* UEFI spec is missing this definition. */
+    UNKNOWN_30,   /* UEFI spec is missing this definition. */
+    END_OF_FILE,
+    INVALID_LANGUAGE,
+    COMPROMISED_DATA,
+    IP_ADDRESS_CONFLICT,
+    HTTP_ERROR,
+    EFILIB_UNINITIALIZED,   /* Used for efilib calls when init() hasn't been called. */
+    UNKNOWN_STATUS;   /* Fallback for an unknown status code. */
+
+module uefi::status::warning;
+
+// Warnings
+faultdef
+    UNKNOWN_GLYPH,
+    DELETE_FAILURE,
+    WRITE_FAILURE,
+    BUFFER_TOO_SMALL,
+    STALE_DATA,
+    FILE_SYSTEM,
+    RESET_REQUIRED;
+
+module uefi;
+
+import uefi::status;
+
+macro @efi_err($x) @private => (usz)((1l << ((usz.sizeof * 8) - 1)) | $x);
+macro @efi_warn($x) @private => (usz)$x;
+
+enum EfiStatus : ulong (usz raw, fault faultType) {
+    SUCCESS                     = { 0, error::NO_FAULT },
+
+    LOAD_ERROR                  = { @efi_err(1), error::LOAD_ERROR },
+    INVALID_PARAMETER           = { @efi_err(2), error::INVALID_PARAMETER },
+    UNSUPPORTED                 = { @efi_err(3), error::UNSUPPORTED },
+    BAD_BUFFER_SIZE             = { @efi_err(4), error::BAD_BUFFER_SIZE },
+    BUFFER_TOO_SMALL            = { @efi_err(5), error::BUFFER_TOO_SMALL },
+    NOT_READY                   = { @efi_err(6), error::NOT_READY },
+    DEVICE_ERROR                = { @efi_err(7), error::DEVICE_ERROR },
+    WRITE_PROTECTED             = { @efi_err(8), error::WRITE_PROTECTED },
+    OUT_OF_RESOURCES            = { @efi_err(9), error::OUT_OF_RESOURCES },
+    VOLUME_CORRUPTED            = { @efi_err(10), error::VOLUME_CORRUPTED },
+    VOLUME_FULL                 = { @efi_err(11), error::VOLUME_FULL },
+    NO_MEDIA                    = { @efi_err(12), error::NO_MEDIA },
+    MEDIA_CHANGED               = { @efi_err(13), error::MEDIA_CHANGED },
+    NOT_FOUND                   = { @efi_err(14), error::NOT_FOUND },
+    ACCESS_DENIED               = { @efi_err(15), error::ACCESS_DENIED },
+    NO_RESPONSE                 = { @efi_err(16), error::NO_RESPONSE },
+    NO_MAPPING                  = { @efi_err(17), error::NO_MAPPING },
+    TIMEOUT                     = { @efi_err(18), error::TIMEOUT },
+    NOT_STARTED                 = { @efi_err(19), error::NOT_STARTED },
+    ALREADY_STARTED             = { @efi_err(20), error::ALREADY_STARTED },
+    ABORTED                     = { @efi_err(21), error::ABORTED },
+    ICMP_ERROR                  = { @efi_err(22), error::ICMP_ERROR },
+    TFTP_ERROR                  = { @efi_err(23), error::TFTP_ERROR },
+    PROTOCOL_ERROR              = { @efi_err(24), error::PROTOCOL_ERROR },
+    INCOMPATIBLE_VERSION        = { @efi_err(25), error::INCOMPATIBLE_VERSION },
+    SECURITY_VIOLATION          = { @efi_err(26), error::SECURITY_VIOLATION },
+    CRC_ERROR                   = { @efi_err(27), error::CRC_ERROR },
+    END_OF_MEDIA                = { @efi_err(28), error::END_OF_MEDIA },
+    UNKNOWN_29                  = { @efi_err(29), error::UNKNOWN_29 },   /* UEFI spec is missing this definition. */
+    UNKNOWN_30                  = { @efi_err(30), error::UNKNOWN_30 },   /* UEFI spec is missing this definition. */
+    END_OF_FILE                 = { @efi_err(31), error::END_OF_FILE },
+    INVALID_LANGUAGE            = { @efi_err(32), error::INVALID_LANGUAGE },
+    COMPROMISED_DATA            = { @efi_err(33), error::COMPROMISED_DATA },
+    IP_ADDRESS_CONFLICT         = { @efi_err(34), error::IP_ADDRESS_CONFLICT },
+    HTTP_ERROR                  = { @efi_err(35), error::HTTP_ERROR },
+
+    WARN_UNKNOWN_GLYPH          = { @efi_warn(1), warning::UNKNOWN_GLYPH },
+    WARN_DELETE_FAILURE         = { @efi_warn(2), warning::DELETE_FAILURE },
+    WARN_WRITE_FAILURE          = { @efi_warn(3), warning::WRITE_FAILURE },
+    WARN_BUFFER_TOO_SMALL       = { @efi_warn(4), warning::BUFFER_TOO_SMALL },
+    WARN_STALE_DATA             = { @efi_warn(5), warning::STALE_DATA },
+    WARN_FILE_SYSTEM            = { @efi_warn(6), warning::FILE_SYSTEM },
+    WARN_RESET_REQUIRED         = { @efi_warn(7), warning::RESET_REQUIRED },
+}
+
+<*
+    Handle EFI errors when they occur.
+    @param status: `The EfiStatus code to check`
+    @param catchWarnings: `Return a ``true`` value on EFI_WARN_... codes`
+    @return ```false`` on success. ``true`` when ``catchWarnings`` is false and ``status`` is a warning. Returns a fault otherwise.`
+*>
+macro bool? efi_error(EfiStatus status, bool catchWarnings = true) @builtin {
+    switch {
+        case status == SUCCESS: return false;
+
+        case status >= EfiStatus.WARN_UNKNOWN_GLYPH && status <= EfiStatus.WARN_RESET_REQUIRED:
+            return catchWarnings ? status.faultType? : true;
+
+        case status >= EfiStatus.LOAD_ERROR && status <= EfiStatus.HTTP_ERROR:
+            return status.faultType?;
+    }
+
+    return error::UNKNOWN_STATUS?;
+}

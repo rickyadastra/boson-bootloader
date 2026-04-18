@@ -1,0 +1,34 @@
+module uefi;
+
+alias EfiHandle = void*;
+alias VoidPtr = void*;
+typedef EfiEvent = void*;
+
+struct TableHeader {
+    ulong signature;
+    uint revision;
+    uint headerSize;
+    uint crc32;
+    uint reserved;
+}
+
+struct SystemTable {
+    TableHeader header;
+    VoidPtr firmwareVendor;
+    uint firmwareRevision;
+    VoidPtr consoleInHandle;
+    SimpleTextInputProtocol* conIn;
+    VoidPtr consoleOutHandle;
+    SimpleTextOutputProtocol* conOut;
+    VoidPtr standardErrorHandle;
+    void* stdErr;
+    void* runtimeServices;
+    void* bootServices;
+    ulong numberOfTableEntries;
+    void* configurationTable;
+}
+
+alias WChar = ushort;
+typedef EfiString = inline WChar*;
+typedef WString = inline WChar[];
+macro WString @w(String $string) @builtin @public => $$wstr16($string);

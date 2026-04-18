@@ -1,0 +1,11 @@
+{
+    "provides": "uefi",
+    "sources": [
+        "uefi/**",
+        "protocol/**",
+        "extension/**"
+    ],
+    "targets": {
+        "windows-x64": {}
+    }
+}
