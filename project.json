@@ -23,6 +23,7 @@
     "script-dir": "scripts",
     "build-dir": "build",
     "output": "build",
+    "panicfn": "boson::bootloader::panicfn",
     "targets": {
         "boson": {
             "type": "prepare",
@@ -50,6 +51,6 @@
             "link-libc": false
         }
     },
-    "cpu": "generic",
+    "x86cpu": "baseline",
     "opt": "O0"
 }
