@@ -1,0 +1,54 @@
+{
+    "langrev": "1",
+    "warnings": [
+        "no-unused"
+    ],
+    "dependency-search-paths": [
+        "lib"
+    ],
+    "dependencies": [
+        "uefi"
+    ],
+    "authors": [
+        "rickyadastra"
+    ],
+    "version": "0.1.0",
+    "sources": [
+        "src/**"
+    ],
+    "test-sources": [
+        "test/**"
+    ],
+    "script-dir": "scripts",
+    "build-dir": "build",
+    "output": "build",
+    "targets": {
+        "boson": {
+            "type": "prepare",
+            "name": "boson (build)",
+            "exec": [
+                "c3c build obj",
+                "./link_bootloader.sh"
+            ]
+        },
+        "run": {
+            "type": "prepare",
+            "name": "boson (run)",
+            "exec": [
+                "c3c build obj",
+                "./link_bootloader.sh",
+                "./prepare_image.sh",
+                "./run_qemu.sh"
+            ]
+        },
+        "obj": {
+            "target": "windows-x64",
+            "type": "object-files",
+            "no-entry": true,
+            "use-stdlib": false,
+            "link-libc": false
+        }
+    },
+    "cpu": "generic",
+    "opt": "O0"
+}

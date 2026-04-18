@@ -1,0 +1,20 @@
+<p align="center">
+  <!-- <br><br> -->
+  A <b>C3 UEFI bootloader</b> for the x86-64 architecture. Made for the <a href="https://github.com/rickyadastra/muon-kernel/">muon kernel</a>.
+  <br><br>
+  <a href="https://c3-lang.org/"><img alt="Language C3" src="https://img.shields.io/badge/Language-C3-3381ff"></a>
+</p>
+
+## Requirements
+- Install [c3c](https://c3-lang.org/getting-started/prebuilt-binaries/#installing-on-ubuntu)
+- Install build and run utils with `sudo apt install lld mtools qemu-system-x86`
+- Enable KVM[^1] 
+
+[^1]: If you're using WSL2 follow this [guide](https://serverfault.com/a/1115773)
+
+## Compiling and running
+- To compile from sources, run `make`. You can find the compiled binary in the `build/` folder.
+- To run from sources, run `make run`
+
+> [!IMPORTANT]
+> The Makefile is used to minimize command length. The c3c compiler will be run in full trust mode to execute linking and running scripts from the [scripts/](scripts) folder.
