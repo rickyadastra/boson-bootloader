@@ -1,0 +1,9 @@
+{
+    "provides": "commons",
+    "sources": [
+        "src/**"
+    ],
+    "targets": {
+        "windows-x64": {}
+    }
+}
