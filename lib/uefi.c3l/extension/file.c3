@@ -12,3 +12,5 @@ macro FileProtocol.set_position(&self, ulong pos) => self._set_position(self, po
 macro FileProtocol.get_info(&self, EfiGuid* infoType, usz* bufSize, void* buf) => self._get_info(self, infoType, bufSize, buf);
 macro FileProtocol.set_info(&self, EfiGuid* infoType, usz bufSize, void* buf) => self._set_info(self, infoType, bufSize, buf);
 macro FileProtocol.flush(&self) => self._flush(self);
+
+macro FileSystemProtocol.open_volume(&self, FileProtocol** fileProt) => self._open_volume(self, fileProt);

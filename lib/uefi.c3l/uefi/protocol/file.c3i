@@ -35,5 +35,25 @@ struct FileProtocol {
 
 struct FileSystemProtocol {
 	ulong revision;
-	FileSystemOpenVolumeFn open_volume;
+	FileSystemOpenVolumeFn _open_volume;
+}
+
+struct FileInfo {
+	ulong size;
+	ulong fileSize;
+	ulong physicalSize;
+	EfiTime createTime;
+	EfiTime lastAccessTime;
+	EfiTime editTime;
+	ulong attribute;
+	WChar[*] filename;
+}
+
+struct FileSystemInfo {
+	ulong size;
+	bool readOnly;
+	ulong volumeSize;
+	ulong freeSpace;
+	uint blockSize;
+	WChar[*] volumeLabel;
 }
