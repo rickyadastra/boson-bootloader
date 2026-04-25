@@ -29,7 +29,7 @@ fn void Console.print_newline(&self) => self.wprint(WNEWLINE);
 fn void Console.print(&self, String string, args...) {
     Formatter fmt; 
     String s = fmt.format(string, ...args)!!;
-    efi_error(self.conOut.@output_string((EfiString)@wide(s)))!!;
+    @catch(self.conOut.@output_string((EfiString)@wide(s)));
 }
 
 macro Console.printn(&self, String string, args...) {
@@ -37,7 +37,7 @@ macro Console.printn(&self, String string, args...) {
     self.print_newline();
 }
 
-macro void Console.wprint(&self, string) => efi_error(self.conOut.@output_string(string))!!;
+macro void Console.wprint(&self, string) => @catch(self.conOut.@output_string(string));
 
 macro Console.wprintn(&self, string) {
     self.wprint(string);

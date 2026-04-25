@@ -6,6 +6,25 @@ SystemTable* _table @private;
 Console console;
 MemoryManager mem;
 
+// Error handling macros
+macro @catch(#func) @builtin {
+	if (catch f = efi_error(#func)) @throw(f);
+}
+
+macro @expect(#func, #f; @body()) @builtin {
+	if (catch fa = efi_error(#func)) {
+		if (fa == #f) {
+			@body();
+		} else {
+			bootloader::log_and_panic(fa.nameof, $$FILE, $$FUNC, $$LINE);
+		}
+	}
+}
+
+macro @throw(#f) @builtin {
+	bootloader::log_and_panic(#f.nameof, $$FILE, $$FUNC, $$LINE);
+}
+
 // Allocation macros
 macro alloc(usz size) => mem.alloc(size);
 macro alloct($Type) => ($Type*)mem.alloc($Type.sizeof);
