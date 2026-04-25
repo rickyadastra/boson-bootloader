@@ -1,5 +1,6 @@
 <p align="center">
-  <!-- <br><br> -->
+  <img alt="Boson Bootloader Logo" src="assets/logo.png" width=720/>
+  <br>
   A <b>C3 UEFI bootloader</b> for the x86-64 architecture. Made for the <a href="https://github.com/rickyadastra/muon-kernel/">muon kernel</a>.
   <br><br>
   <a href="https://c3-lang.org/"><img alt="Language C3" src="https://img.shields.io/badge/Language-C3-3381ff"></a>
@@ -12,9 +13,10 @@
 
 [^1]: If you're using WSL2 follow this [guide](https://serverfault.com/a/1115773)
 
-## Compiling and running
-- To compile from sources, run `make`. You can find the compiled binary in the `build/` folder.
-- To run from sources, run `make run`
+## Getting started
+After cloning this repository to your local machine, use `make` to build the bootloader. 
+You will find the compiled binary in the `build` folder.
+Executing `make run` will compile and run the booloader in a QEMU virtual machine.
 
 > [!IMPORTANT]
 > The Makefile is used to minimize command length. The c3c compiler will be run in full trust mode to execute linking and running scripts from the [scripts/](scripts) folder.
