@@ -14,15 +14,15 @@ struct TableHeader {
 
 struct SystemTable {
     TableHeader header;
-    VoidPtr firmwareVendor;
+    EfiString firmwareVendor;
     uint firmwareRevision;
-    VoidPtr consoleInHandle;
+    EfiHandle consoleInHandle;
     SimpleTextInputProtocol* conIn;
-    VoidPtr consoleOutHandle;
+    EfiHandle consoleOutHandle;
     SimpleTextOutputProtocol* conOut;
-    VoidPtr standardErrorHandle;
-    void* stdErr;
-    void* runtimeServices;
+    EfiHandle standardErrorHandle;
+    SimpleTextOutputProtocol* stdErr;
+    RuntimeServices* runtimeServices;
     void* bootServices;
     ulong numberOfTableEntries;
     void* configurationTable;
