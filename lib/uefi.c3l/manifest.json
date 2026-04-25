@@ -2,7 +2,6 @@
     "provides": "uefi",
     "sources": [
         "uefi/**",
-        "protocol/**",
         "extension/**"
     ],
     "targets": {
