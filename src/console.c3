@@ -24,6 +24,8 @@ macro WString @wide(String str) {
     return (WString)buf[..str.len+1];
 }
 
+fn void Console.print_newline(&self) => self.wprint(WNEWLINE); 
+
 fn void Console.print(&self, String string, args...) {
     Formatter fmt; 
     String s = fmt.format(string, ...args)!!;
@@ -32,14 +34,14 @@ fn void Console.print(&self, String string, args...) {
 
 macro Console.printn(&self, String string, args...) {
     self.print(string, ...args);
-    self.print(NEWLINE);
+    self.print_newline();
 }
 
 macro void Console.wprint(&self, string) => efi_error(self.conOut.@output_string(string))!!;
 
 macro Console.wprintn(&self, string) {
     self.wprint(string);
-    self.wprint(WNEWLINE);
+    self.print_newline();
 }
 
 fn void Console.panic(&self, String reason, String file = "", String func = "", uint line = 0) {
