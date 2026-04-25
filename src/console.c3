@@ -6,7 +6,7 @@ import commons::formatting;
 
 const String NEWLINE @private = "\r\n";
 const WString WNEWLINE @private = $$wstr16(NEWLINE);
-WChar[1024] buf = {};
+WChar[1024] buf @local = {};
 
 struct Console {
     SimpleTextInputProtocol* conIn;
@@ -30,15 +30,15 @@ fn void Console.print(&self, String string, args...) {
     efi_error(self.conOut.@output_string((EfiString)@wide(s)))!!;
 }
 
-macro Console.wprint(&self, WString $string) => efi_error(self.conOut.@output_string($string))!!;
-
 macro Console.printn(&self, String string, args...) {
     self.print(string, ...args);
-    self.wprint(WNEWLINE);
+    self.print(NEWLINE);
 }
 
-macro Console.wprintn(&self, WString $string) {
-    self.wprint($string);
+macro void Console.wprint(&self, string) => efi_error(self.conOut.@output_string(string))!!;
+
+macro Console.wprintn(&self, string) {
+    self.wprint(string);
     self.wprint(WNEWLINE);
 }
 
