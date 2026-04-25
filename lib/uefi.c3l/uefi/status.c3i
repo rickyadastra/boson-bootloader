@@ -110,18 +110,15 @@ enum EfiStatus : ulong (usz raw, fault faultType) {
 
 <*
     Handle EFI errors when they occur.
-    @param status: `The EfiStatus code to check`
-    @param catchWarnings: `Return a ``true`` value on EFI_WARN_... codes`
-    @return ```false`` on success. ``true`` when ``catchWarnings`` is false and ``status`` is a warning. Returns a fault otherwise.`
 *>
 macro bool? efi_error(EfiStatus status, bool catchWarnings = true) @builtin {
     switch {
         case status == SUCCESS: return false;
 
-        case status >= EfiStatus.WARN_UNKNOWN_GLYPH && status <= EfiStatus.WARN_RESET_REQUIRED:
+        case (usz)status >= EfiStatus.WARN_UNKNOWN_GLYPH.raw && (usz)status <= EfiStatus.WARN_RESET_REQUIRED.raw:
             return catchWarnings ? status.faultType? : true;
 
-        case status >= EfiStatus.LOAD_ERROR && status <= EfiStatus.HTTP_ERROR:
+        case (usz)status >= EfiStatus.LOAD_ERROR.raw && (usz)status <= EfiStatus.HTTP_ERROR.raw:
             return status.faultType?;
     }
 
