@@ -7,6 +7,7 @@ alias AllocatePoolFn = fn EfiStatus (MemoryType, usz, void**);
 alias FreePagesFn = fn EfiStatus (uptr, usz);
 alias FreePoolFn = fn EfiStatus (void*);
 alias GetMemoryMapFn = fn EfiStatus (usz*, MemoryDescriptor*, usz*, usz*, uint*);
+alias HandleProtocolFn = fn EfiStatus (EfiHandle, EfiGuid*, void**);
 alias ExitBootServicesFn = fn EfiStatus (EfiHandle, usz);
 alias CopyMemFn = fn void (void* dst, void* src, usz);
 alias SetMemFn = fn void (void* buf, usz, char);
@@ -40,7 +41,7 @@ struct BootServices @packed {
     void* install_protocol_interface;
     void* reinstall_protocol_interface;
     void* uninstall_protocol_interface;
-    void* handle_protocol;
+    HandleProtocolFn handle_protocol;
     void* _reserved;
     void* register_protocol_notify;
     void* locate_handle;
