@@ -1,0 +1,23 @@
+module uefi::protocol::image;
+
+import uefi;
+import uefi::protocol::mem;
+
+struct LoadedImageProtocol {
+	uint revision;
+	EfiHandle parentHandle;
+	SystemTable* systemTable;
+
+	EfiHandle deviceHandle;
+	void* filePath;
+	void* reserved;
+
+	uint loadOptionsSize;
+	void* loadOptions;
+
+	void* imageBase;
+	ulong imageSize;
+	MemoryType imageCodeType;
+	MemoryType imageDataType;
+	void* unload;
+}
