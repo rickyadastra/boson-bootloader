@@ -1,0 +1,39 @@
+module uefi::protocol::file;
+
+import uefi;
+
+alias FileOpenFn = fn EfiStatus (FileProtocol*, FileProtocol** newHandle, WChar* fileName, ulong openMode, ulong attributes);
+alias FileCloseFn = fn EfiStatus (FileProtocol*);
+alias FileDeleteFn = fn EfiStatus (FileProtocol*);
+alias FileReadFn = fn EfiStatus (FileProtocol*, usz*, void*);
+alias FileWriteFn = fn EfiStatus (FileProtocol*, usz*, void*);
+alias FileGetPositionFn = fn EfiStatus (FileProtocol*, ulong*);
+alias FileSetPositionFn = fn EfiStatus (FileProtocol*, ulong);
+alias FileGetInfoFn = fn EfiStatus (FileProtocol*, EfiGuid*, usz*, void*);
+alias FileSetInfoFn = fn EfiStatus (FileProtocol*, EfiGuid*, usz, void*);
+alias FileFlushFn = fn EfiStatus (FileProtocol*);
+
+alias FileSystemOpenVolumeFn = fn EfiStatus (FileSystemProtocol*, FileProtocol**);
+
+struct FileProtocol {
+	ulong revision;
+	FileOpenFn _open;
+	FileCloseFn _close;
+	FileDeleteFn _delete;
+	FileReadFn _read;
+	FileWriteFn _write;
+	FileGetPositionFn _get_position;
+	FileSetPositionFn _set_position;
+	FileGetInfoFn _get_info;
+	FileSetInfoFn _set_info;
+	FileFlushFn _flush;
+	void* _open_ex;
+	void* _read_ex;
+	void* _write_ex;
+	void* _flush_ex;
+}
+
+struct FileSystemProtocol {
+	ulong revision;
+	FileSystemOpenVolumeFn open_volume;
+}
