@@ -67,7 +67,7 @@ fn void Console.panic(&self, String reason, String file = "", String func = "", 
 }
 
 macro Console.pause(&self) {
-    while (catch efi_error(self.conIn.@read_key((EfiInputKey){})));
+    while (catch efi_error(self.conIn.read_key(&&(EfiInputKey){})));
 }
 
-macro Console.clear(&self) => self.conOut.@clear_screen();
+macro Console.clear(&self) => self.conOut.clear_screen();

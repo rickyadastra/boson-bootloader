@@ -77,9 +77,9 @@ enum ScanCode : ushort (ushort raw) {
 }
 
 struct SimpleTextInputProtocol {
-    InputResetFn reset;
-    InputReadKeyFn read_key;
-    EfiEvent event_wait_for_key;
+    InputResetFn _reset;
+    InputReadKeyFn _read_key;
+    EfiEvent _event_wait_for_key;
 }
 
 struct EfiInputKey {
@@ -129,15 +129,15 @@ struct EfiKeyData {
 }
 
 struct SimpleTextOutputProtocol {
-    OutputResetFn reset;
-    OutputStringFn output_string;
-    OutputTestStringFn test_string;
-    OutputQueryModeFn query_mode;
-    OutputSetModeFn set_mode;
-    OutputSetAttributeFn set_attribute;
-    OutputClearScreenFn clear_screen;
-    OutputSetCursorPositionFn set_cursor_position;
-    OutputEnableCursorFn enable_cursor;
+    OutputResetFn _reset;
+    OutputStringFn _output_string;
+    OutputTestStringFn _test_string;
+    OutputQueryModeFn _query_mode;
+    OutputSetModeFn _set_mode;
+    OutputSetAttributeFn _set_attribute;
+    OutputClearScreenFn _clear_screen;
+    OutputSetCursorPositionFn _set_cursor_position;
+    OutputEnableCursorFn _enable_cursor;
     TextMode* mode;
 }
 
