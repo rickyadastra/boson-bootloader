@@ -1,6 +1,6 @@
 module uefi::protocol::runtime_services;
 
-alias ResetSystemFn = fn void(ResetType, EfiStatus, usz, void*);
+alias ResetSystemFn = fn void (ResetType, EfiStatus, usz, void*);
 
 enum ResetType : uint {
     COLD,
@@ -10,7 +10,6 @@ enum ResetType : uint {
 }
 
 module uefi;
-
 import uefi::protocol::runtime_services;
 
 struct RuntimeServices @packed {

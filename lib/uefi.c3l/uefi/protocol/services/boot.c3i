@@ -1,0 +1,83 @@
+module uefi::protocol::boot_services;
+
+import uefi::protocol::mem;
+
+alias AllocatePagesFn = fn EfiStatus (AllocateType, MemoryType, usz, uptr*);
+alias AllocatePoolFn = fn EfiStatus (MemoryType, usz, void**);
+alias FreePagesFn = fn EfiStatus (uptr, usz);
+alias FreePoolFn = fn EfiStatus (void*);
+alias GetMemoryMapFn = fn EfiStatus (usz*, MemoryDescriptor*, usz*, usz*, uint*);
+alias ExitBootServicesFn = fn EfiStatus (EfiHandle, usz);
+
+module uefi;
+import uefi::protocol::boot_services;
+
+struct BootServices @packed {
+    inline TableHeader header;
+
+    // Task priority services
+    void* raise_tpl;
+    void* restore_tpl;
+
+    // Memory services (uefi::protocol::mem)
+    AllocatePagesFn allocate_pages;
+    FreePagesFn free_pages;
+    GetMemoryMapFn get_memory_map;
+    AllocatePoolFn allocate_pool;
+    FreePoolFn free_pool;
+
+    // Event and Timer services 
+    void* create_event;
+    void* set_timer;
+    void* wait_for_event;
+    void* signal_event;
+    void* close_event;
+    void* check_event;
+
+    // Protocol Handler services
+    void* install_protocol_interface;
+    void* reinstall_protocol_interface;
+    void* uninstall_protocol_interface;
+    void* handle_protocol;
+    void* _reserved;
+    void* register_protocol_notify;
+    void* locate_handle;
+    void* locate_device_path;
+    void* install_configuration_table;
+
+    // Image services
+    void* load_image;
+    void* start_image;
+    void* exit_image;
+    void* unload_image;
+    ExitBootServicesFn exit_boot_services;
+
+    // Misc services
+    void* get_next_monotonic_count;
+    void* stall;
+    void* set_watchdog_timer;
+
+    // Driver Support services
+    void* connect_controller;
+    void* disconnect_controller;
+
+    // Open/Close Protocol services
+    void* open_protocol;
+    void* close_protocol;
+    void* open_protocol_information;
+
+    // Library services
+    void* protocols_per_handle;
+    void* locate_handle_buffer;
+    void* locate_protocol;
+    void* install_multiple_protocol_interfaces;
+    void* uninstall_multiple_protocol_interfaces;
+
+    // 32-bit CRC services
+    void* calculate_crc32;
+
+    // More misc services
+    void* copy_mem;
+    void* set_mem;
+    void* create_event_ex;
+}

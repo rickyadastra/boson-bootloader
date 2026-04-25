@@ -1,7 +1,6 @@
 module uefi;
 
 alias EfiHandle = void*;
-alias VoidPtr = void*;
 typedef EfiEvent = void*;
 
 struct TableHeader {
@@ -23,7 +22,7 @@ struct SystemTable {
     EfiHandle standardErrorHandle;
     SimpleTextOutputProtocol* stdErr;
     RuntimeServices* runtimeServices;
-    void* bootServices;
+    BootServices* bootServices;
     ulong numberOfTableEntries;
     void* configurationTable;
 }

@@ -1,0 +1,34 @@
+module uefi::protocol::mem;
+
+enum MemoryType : uint {
+    RESERVED,
+    LOADER_CODE,
+    LOADER_DATA,
+    BOOT_SERVICES_CODE,
+    BOOT_SERVICES_DATA,
+    RUNTIME_SERVICES_CODE,
+    RUNTIME_SERVICES_DATA,
+    CONVENTIONAL,
+    UNUSABLE,
+    ACPI_RECLAIM,
+    ACPI_NVS,
+    MEMORY_MAPPED_IO,
+    MEMORY_MAPPED_IO_PORT_SPACE,
+    PAL_CODE,
+    PERSISTENT,
+    UNACCEPTED,
+}
+
+enum AllocateType {
+    ANY_PAGES,
+    MAX_ADDRESS,
+    ADDRESS,
+}
+
+struct MemoryDescriptor {
+    MemoryType type;
+    uptr physicalStart;
+    uptr virtualStart;
+    ulong numberOfPages;
+    ulong attribute;
+}
