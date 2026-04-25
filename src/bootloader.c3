@@ -1,16 +1,19 @@
 module boson;
 
-Console console;
+import uefi;
 
-macro panic() {
-	asm("cli");
-	asm("hlt");
-}
+SystemTable* _table @private;
+Console console;
+MemoryManager mem;
+
+// Allocation macros
+macro alloc(usz size) => mem.alloc(usz);
+macro alloct($Type) => ($Type*)mem.alloc($Type.sizeof);
 
 module boson::bootloader;
 
 import uefi;
-import boson::console;
+import boson @public;
 
 fn void log_and_panic(String reason, String file = "", String func = "", uint line = 0) {
 	boson::console.panic(reason, file, func, line);
@@ -21,7 +24,9 @@ alias PanicFn = fn void(String message, String file, String function, uint line)
 PanicFn panicfn = &log_and_panic;
 
 fn void init(SystemTable* table) {
+	boson::_table = table;
 	boson::console = console::init(table);
+	boson::mem = memory::init(table);
 }
 
 // Hacky stuff to avoid lld-link complaints

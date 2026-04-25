@@ -2,12 +2,14 @@ module uefi::protocol::boot_services;
 
 import uefi::protocol::mem;
 
-alias AllocatePagesFn = fn EfiStatus (AllocateType, MemoryType, usz, uptr*);
+alias AllocatePagesFn = fn EfiStatus (AllocateType, MemoryType, usz, void**);
 alias AllocatePoolFn = fn EfiStatus (MemoryType, usz, void**);
 alias FreePagesFn = fn EfiStatus (uptr, usz);
 alias FreePoolFn = fn EfiStatus (void*);
 alias GetMemoryMapFn = fn EfiStatus (usz*, MemoryDescriptor*, usz*, usz*, uint*);
 alias ExitBootServicesFn = fn EfiStatus (EfiHandle, usz);
+alias CopyMemFn = fn void (void* dst, void* src, usz);
+alias SetMemFn = fn void (void* buf, usz, char);
 
 module uefi;
 import uefi::protocol::boot_services;
@@ -77,7 +79,7 @@ struct BootServices @packed {
     void* calculate_crc32;
 
     // More misc services
-    void* copy_mem;
-    void* set_mem;
+    CopyMemFn copy_mem;
+    SetMemFn set_mem;
     void* create_event_ex;
 }
