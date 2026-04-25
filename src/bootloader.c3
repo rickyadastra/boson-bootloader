@@ -7,7 +7,7 @@ Console console;
 MemoryManager mem;
 
 // Allocation macros
-macro alloc(usz size) => mem.alloc(usz);
+macro alloc(usz size) => mem.alloc(size);
 macro alloct($Type) => ($Type*)mem.alloc($Type.sizeof);
 
 module boson::bootloader;
