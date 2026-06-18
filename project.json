@@ -8,7 +8,8 @@
     ],
     "dependencies": [
         "commons",
-        "uefi"
+        "uefi",
+        "photon"
     ],
     "authors": [
         "rickyadastra"
@@ -20,7 +21,6 @@
     "test-sources": [
         "test/**"
     ],
-    "script-dir": "scripts",
     "build-dir": "build",
     "output": "build",
     "panicfn": "boson::bootloader::panicfn",
@@ -37,23 +37,6 @@
             "link-args": [
                 "/ENTRY:efi_main"
             ]
-        },
-        "run": {
-            "type": "prepare",
-            "name": "boson (run)",
-            "exec": [
-                "c3c build obj",
-                "./link_bootloader.sh",
-                "./prepare_image.sh",
-                "./run_qemu.sh"
-            ]
-        },
-        "obj": {
-            "target": "windows-x64",
-            "type": "object-files",
-            "no-entry": true,
-            "use-stdlib": false,
-            "link-libc": false
         }
     },
     "x86cpu": "baseline",
