@@ -24,7 +24,7 @@ fn ulong? any_to_decimal(any arg, bool* negative, typeid* type) {
     ulong value = 0;
     *negative = false;
 
-    switch (arg.type.kindof) {
+    switch (arg.type.kind) {
         case TypeKind.FUNC.ordinal:
         case TypeKind.POINTER.ordinal:
             return (ulong)(uptr)*(void**)arg.ptr;
@@ -37,27 +37,27 @@ fn ulong? any_to_decimal(any arg, bool* negative, typeid* type) {
                 case bool: 
                     value = (ulong)*(bool*)arg;
                 case ichar: 
-                    value = *(ichar*)arg;
+                    value = (ulong)*(ichar*)arg;
                     *negative = (ichar)value < 0;
                 case char: 
                     value = *(char*)arg;
                 case short: 
-                    value = *(short*)arg;
+                    value = (ulong)*(short*)arg;
                     *negative = (short)value < 0;
                 case ushort: 
                     value = *(ushort*)arg;
                 case int: 
-                    value = *(int*)arg;
+                    value = (ulong)*(int*)arg;
                     *negative = (int)value < 0;
                 case uint: 
                     value = *(uint*)arg;
                 case long: 
-                    value = *(long*)arg;
+                    value = (ulong)*(long*)arg;
                     *negative = (long)value < 0;
                 case ulong: 
                     value = *(ulong*)arg;
                 default: 
-                    return BAD_VALUE?;
+                    return BAD_VALUE~;
             }
     }
 
@@ -72,7 +72,7 @@ fn ulong? any_to_decimal(any arg, bool* negative, typeid* type) {
 *>
 fn usz? format_any_to_decimal(any arg, char[] buf, usz base = 10, usz zeropad = 0) {
     bool negative = false;
-    typeid actualType = ulong.typeid;
+    typeid actualType = ulong::typeid;
     char[INTERNAL_FORMAT_BUFFER_SIZE] fmtBuf @noinit;
     ulong value = any_to_decimal(arg, &negative, &actualType)!;
     usz fmtLen = 0;
@@ -92,13 +92,13 @@ fn usz? format_any_to_decimal(any arg, char[] buf, usz base = 10, usz zeropad = 
         }
 
     } else if (base == 16) {
-        while (fmtLen < (actualType.sizeof*2)) {
+        while (fmtLen < ((ulong)actualType.size*2)) {
             fmtBuf[fmtLen++] = '0';
         }
     }
 
-    usz totalBufLen = fmtLen + (base != 10 ? 2 : 0) + (negative ? 1 : 0);
-    if (totalBufLen > buf.len) return FORMAT_BUFFER_EXCEEDED?;
+    usz totalBufLen = fmtLen + (base != 10 ? 2l : 0l) + (negative ? 1l : 0l);
+    if (totalBufLen > buf.len) return FORMAT_BUFFER_EXCEEDED~;
 
     usz j = 0;
     if (negative) {
@@ -125,13 +125,13 @@ fn usz? format_any_to_decimal(any arg, char[] buf, usz base = 10, usz zeropad = 
 }
 
 fn char* fmt_u(ulong x, char* s) {
-    for (; x > ulong.max; x /= 10) *--s = '0' + (char)(x % 10);
+    for (; x > ulong::max; x /= 10) *--s = '0' + (char)(x % 10);
     for (ulong y = (ulong)x; y; y /= 10) *--s = '0' + (char)(y % 10);
     return s;
 }
 
 macro any? @get_arg(#args, #i) {
-    if (#i >= #args.len) return MISSING_ARGUMENT?;
+    if (#i >= #args.len) return MISSING_ARGUMENT~;
     return #args[#i++]; 
 }
 
@@ -183,15 +183,15 @@ fn String? Formatter.format(Formatter* self, String format, args...) {
                 len += format_any_to_decimal(@get_arg(args, va_i), self.buffer[len..], base: self.base, zeropad: self.zeropad)!;
             case 'c':
                 char arg = *(char*)@get_arg(args, va_i)!;
-                if (len + 1 > INTERNAL_BUFFER_SIZE) return INTERNAL_BUFFER_EXCEEDED?;
+                if (len + 1 > INTERNAL_BUFFER_SIZE) return INTERNAL_BUFFER_EXCEEDED~;
                 self.buffer[len++:1] = arg;
             case 's':
                 String arg = *(String*)@get_arg(args, va_i)!;
-                if (len + arg.len > INTERNAL_BUFFER_SIZE) return INTERNAL_BUFFER_EXCEEDED?;
+                if (len + arg.len > INTERNAL_BUFFER_SIZE) return INTERNAL_BUFFER_EXCEEDED~;
                 self.buffer[len:arg.len] = arg[..];
                 len += arg.len;
             default:
-                if (len + 2 > INTERNAL_BUFFER_SIZE) return INTERNAL_BUFFER_EXCEEDED?;
+                if (len + 2 > INTERNAL_BUFFER_SIZE) return INTERNAL_BUFFER_EXCEEDED~;
                 self.buffer[len:2] = ((char[2]){'%', c})[..];
                 len += 2;
 

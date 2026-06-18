@@ -5,7 +5,7 @@ import uefi::protocol::console;
 import commons::formatting;
 
 const String NEWLINE @private = "\r\n";
-const WString WNEWLINE @private = $$wstr16(NEWLINE);
+const WString WNEWLINE @private = (WString)$$wstr16(NEWLINE);
 WChar[1024] buf @local = {};
 
 struct Console {
@@ -44,7 +44,7 @@ macro Console.wprintn(&self, string) {
     self.print_newline();
 }
 
-fn void Console.panic(&self, String reason, String file = "", String func = "", uint line = 0) {
+fn void Console.panic(&self, String reason, String file = "", String func = "", int line = 0) {
 	self.conOut.@output_string("\nBOSON PANIC! ");
 	self.conOut.@output_string(@wide(reason));
 

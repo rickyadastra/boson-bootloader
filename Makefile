@@ -1,11 +1,14 @@
 .PHONY: build
 
+C3C 	:= /mnt/e/OSDev/c3c/build/c3c
+FLAGS 	:= --trust=full --warn-builtin=no
+
 build:
-	@c3c build boson --trust=full
+	@${C3C} build boson ${FLAGS}
 
 run:
-	@c3c build run --trust=full
+	@${C3C} build run ${FLAGS}
 
 clear:
-	@c3c clean
+	@${C3C} clean
 	@rm -rf ./build

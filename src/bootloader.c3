@@ -16,30 +16,30 @@ macro @expect(#func, #f; @body()) @builtin {
 		if (fa == #f) {
 			@body();
 		} else {
-			bootloader::log_and_panic(fa.nameof, $$FILE, $$FUNC, $$LINE);
+			bootloader::log_and_panic(fa.description, $$FILE, $$FUNC, $$LINE);
 		}
 	}
 }
 
 macro @throw(#f) @builtin {
-	bootloader::log_and_panic(#f.nameof, $$FILE, $$FUNC, $$LINE);
+	bootloader::log_and_panic(#f.description, $$FILE, $$FUNC, $$LINE);
 }
 
 // Allocation macros
 macro alloc(usz size) => mem.alloc(size);
-macro alloct($Type) => ($Type*)mem.alloc($Type.sizeof);
+macro alloct($Type) => ($Type*)mem.alloc($Type::size);
 
 module boson::bootloader;
 
 import uefi;
 import boson @public;
 
-fn void log_and_panic(String reason, String file = "", String func = "", uint line = 0) {
+fn void log_and_panic(String reason, String file = "", String func = "", int line = 0) {
 	boson::console.panic(reason, file, func, line);
 	boson::panic();
 }
 
-alias PanicFn = fn void(String message, String file, String function, uint line);
+alias PanicFn = fn void(String message, String file, String function, int line);
 PanicFn panicfn = &log_and_panic;
 
 fn void init(SystemTable* table) {

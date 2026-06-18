@@ -26,11 +26,16 @@
     "panicfn": "boson::bootloader::panicfn",
     "targets": {
         "boson": {
-            "type": "prepare",
-            "name": "boson (build)",
-            "exec": [
-                "c3c build obj",
-                "./link_bootloader.sh"
+            "type": "executable",
+            "name": "boson",
+            "extension": ".efi",
+            "target": "windows-x64",
+            "no-entry": true,
+            "use-stdlib": false,
+            "link-libc": false,
+            "win-subsystem": "EFI_APPLICATION",
+            "link-args": [
+                "/ENTRY:efi_main"
             ]
         },
         "run": {
