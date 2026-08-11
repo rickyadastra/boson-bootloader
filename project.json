@@ -33,7 +33,7 @@
             "no-entry": true,
             "use-stdlib": false,
             "link-libc": false,
-            "win-subsystem": "EFI_APPLICATION",
+            "win-subsystem": "efi-app",
             "link-args": [
                 "/ENTRY:efi_main"
             ]

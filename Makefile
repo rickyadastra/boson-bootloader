@@ -1,4 +1,4 @@
-C3C 			:= /mnt/e/OSDev/c3c/build/c3c
+C3C 			:= c3c
 FLAGS 			:= --trust=full --warn-builtin=no
 BOOTLOADER_NAME := boson.efi
 BUILD_DIR		:= build
