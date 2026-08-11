@@ -1,6 +1,9 @@
 module boson;
 
 import uefi;
+import photon;
+
+const WString KERNEL_FILENAME = (WString)$$wstr16("\\EFI\\BOOT\\muon.sys");
 
 fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") {
 	bootloader::init(table);
@@ -20,13 +23,18 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 	@catch(table.bootServices.handle_protocol(image.deviceHandle, &guid::SIMPLE_FILE_SYSTEM_PROTOCOL, (void**)&filesystem));
 	@catch(filesystem.open_volume(&root));
 
+	// load kernel file
+
 	usz size;
 
-	@expect(root.get_info(&guid::FILE_INFO, &size, null), error::BUFFER_TOO_SMALL) {
+	FileProtocol* kernelFile;
+	root.open(&kernelFile, KERNEL_FILENAME, 0x1, 0);
+
+	@expect(kernelFile.get_info(&guid::FILE_INFO, &size, null), error::BUFFER_TOO_SMALL) {
 		console.printn("Allocating %d bytes for file info", size);
 		FileInfo* finfo = (FileInfo*)alloc(size);
-		@catch(root.get_info(&guid::FILE_INFO, &size, finfo));
-		console.print("file info size: %d bytes, filename: \"", finfo.size);
+		@catch(kernelFile.get_info(&guid::FILE_INFO, &size, finfo));
+		console.print("file info size: %d bytes, filename: \"", finfo.fileSize);
 		console.wprint((EfiString)&finfo.filename);
 		console.printn("\"");
 	};
