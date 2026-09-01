@@ -28,12 +28,3 @@ macro @throw(#f) @builtin {
 // Allocation macros
 macro alloc(usz size) => mem.alloc(size);
 macro alloct($Type) => ($Type*)mem.alloc($Type::size);
-
-// Hacky stuff to avoid lld-link complaints
-uptr __security_cookie @export("__security_cookie") = 0x123456789ABCDEF0;
-
-fn void security_check_cookie(uptr cookie)  @noreturn @export("__security_check_cookie") {
-	if (cookie != __security_cookie) {
-		bootloader::log_and_panic("Stack smash detected!");
-	}
-}

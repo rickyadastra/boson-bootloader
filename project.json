@@ -40,5 +40,5 @@
         }
     },
     "x86cpu": "baseline",
-    "opt": "O0"
+    "opt": "O3"
 }
