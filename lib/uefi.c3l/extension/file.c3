@@ -1,6 +1,6 @@
 module uefi::protocol::file;
 
-macro FileProtocol.open(&self, FileProtocol** newHandle, WChar* fileName, ulong openMode, ulong attributes)
+macro FileProtocol.open(&self, FileProtocol** newHandle, WChar* fileName, FileOpenMode openMode, ulong attributes)
 	=> self._open(self, newHandle, fileName, openMode, attributes);
 
 macro FileProtocol.close(&self) => self._close(self);
@@ -14,3 +14,9 @@ macro FileProtocol.set_info(&self, EfiGuid* infoType, usz bufSize, void* buf) =>
 macro FileProtocol.flush(&self) => self._flush(self);
 
 macro FileSystemProtocol.open_volume(&self, FileProtocol** fileProt) => self._open_volume(self, fileProt);
+
+constdef FileOpenMode : inline ulong {
+	CREATE = 0,
+	READ = 1,
+	WRITE = 2,
+}

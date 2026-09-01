@@ -12,10 +12,7 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 	console.printn("Boson Bootloader for Muon Kernel - v2");
 	console.print_newline();
 
-	ulong* a = alloct(ulong);
-	console.printn("Allocated %x", a);
-	console.pause();
-
+	// open volume root
 	LoadedImageProtocol* image;
 	FileSystemProtocol* filesystem;
 	FileProtocol* root;
@@ -23,21 +20,22 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 	@catch(table.bootServices.handle_protocol(image.deviceHandle, &guid::SIMPLE_FILE_SYSTEM_PROTOCOL, (void**)&filesystem));
 	@catch(filesystem.open_volume(&root));
 
-	// load kernel file
-
-	usz size;
-
+	// open kernel file
 	FileProtocol* kernelFile;
-	root.open(&kernelFile, KERNEL_FILENAME, 0x1, 0);
+	root.open(&kernelFile, KERNEL_FILENAME, FileOpenMode.READ, 0);
+	FileInfo* info = file::get_info(kernelFile);
+	console.printn("Kernel file found, size is %d bytes", info.fileSize);
 
-	@expect(kernelFile.get_info(&guid::FILE_INFO, &size, null), error::BUFFER_TOO_SMALL) {
-		console.printn("Allocating %d bytes for file info", size);
-		FileInfo* finfo = (FileInfo*)alloc(size);
-		@catch(kernelFile.get_info(&guid::FILE_INFO, &size, finfo));
-		console.print("file info size: %d bytes, filename: \"", finfo.fileSize);
-		console.wprint((EfiString)&finfo.filename);
-		console.printn("\"");
-	};
+	// load kernel into memory
+	// check elf header
+	// get kernel entry point
+	// alloc+map stack
+	// map low 2mb
+	// map apic
+	// map kernel programs to hh
+	// get acpi table addr
+	// get memory map
+	// bootstrap kernel
 
 	console.pause();
 
