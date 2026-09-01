@@ -1,0 +1,59 @@
+module elf;
+
+const char[4] ELF_MAGIC = { 0x7f, 'E', 'L', 'F' };
+
+constdef BitMode : inline char {
+	BIT32 = 1,
+	BIT64 ,
+}
+
+constdef Endianess : inline char {
+	LITTLE_ENDIAN = 1,
+	BIG_ENDIAN,
+}
+
+constdef Type : inline ushort {
+	RELOCATABLE = 1,
+	EXECUTABLE,
+	SHARED,
+	CORE,
+}
+
+constdef Arch : inline ushort {
+	NO_SPECIFIC,
+	X86_64 = 0x3e,
+}
+
+struct CommonHeader {
+	char[4] magic;
+	BitMode mode;
+	Endianess endianess;
+	char headerVer;
+	char os;
+	char abiVer;
+	char[7] _padding;
+}
+
+$assert(CommonHeader::size == 16);
+
+struct Elf64Header {
+	inline CommonHeader header;
+	Type type;
+	Arch arch;
+	uint elfVer;
+
+	uptr entryPoint;
+	uptr programOffset;
+	uptr sectionsOffset;
+
+	uint flags;
+	ushort size;
+
+	ushort programsSize;
+	ushort programsCount;
+
+	ushort sectionsSize;
+	ushort sectionsCount;
+
+	ushort stringsSectionIndex; 
+}

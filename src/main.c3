@@ -2,6 +2,7 @@ module boson;
 
 import uefi;
 import photon;
+import elf;
 
 const WString KERNEL_FILENAME = (WString)$$wstr16("\\EFI\\BOOT\\muon.sys");
 
@@ -31,10 +32,14 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 
 	// load kernel into memory
 	void* kernelBuf = file::load(kernelFile, kernelInfo);
-
 	console.pause();
 
 	// check elf header
+	if (!elf::check_header(kernelBuf, BitMode.BIT64, Arch.X86_64, Endianess.LITTLE_ENDIAN)) {
+		console.printn("Kernel file is not a valid ELF file");
+		return EfiStatus.UNSUPPORTED;
+	}
+
 	// get kernel entry point
 	// alloc+map stack
 	// map low 2mb
