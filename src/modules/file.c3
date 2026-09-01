@@ -13,3 +13,15 @@ macro FileInfo* get_info(FileProtocol* file) {
 
 	return finfo;
 }
+
+macro void* load(FileProtocol* file, FileInfo* info = null) {
+	if (info == null) {
+		info = get_info(file);
+	}
+
+	usz bufSize = info.fileSize;
+	void* buf = boson::alloc(bufSize);
+	@catch(file.read(&bufSize, buf));
+
+	return buf;
+}

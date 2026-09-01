@@ -16,17 +16,24 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 	LoadedImageProtocol* image;
 	FileSystemProtocol* filesystem;
 	FileProtocol* root;
+
 	@catch(table.bootServices.handle_protocol(handle, &guid::LOADED_IMAGE_PROTOCOL, (void**)&image));
 	@catch(table.bootServices.handle_protocol(image.deviceHandle, &guid::SIMPLE_FILE_SYSTEM_PROTOCOL, (void**)&filesystem));
 	@catch(filesystem.open_volume(&root));
 
 	// open kernel file
 	FileProtocol* kernelFile;
+	FileInfo* kernelInfo;
+
 	root.open(&kernelFile, KERNEL_FILENAME, FileOpenMode.READ, 0);
-	FileInfo* info = file::get_info(kernelFile);
-	console.printn("Kernel file found, size is %d bytes", info.fileSize);
+	kernelInfo = file::get_info(kernelFile);
+	console.printn("Kernel file found, size is %d bytes", kernelInfo.fileSize);
 
 	// load kernel into memory
+	void* kernelBuf = file::load(kernelFile, kernelInfo);
+
+	console.pause();
+
 	// check elf header
 	// get kernel entry point
 	// alloc+map stack
@@ -37,7 +44,6 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 	// get memory map
 	// bootstrap kernel
 
-	console.pause();
 
 	console.printn("Press any key to shut down");
 	console.pause();
