@@ -7,6 +7,28 @@ Console console;
 MemoryManager mem;
 
 uptr kernelEntryPoint;
+PageTable* kernelRootPage;
+
+macro @zero_pad(#v) @local => (#v <= 9) ? "0" : "";
+
+macro print_boot_time() {
+	Time time;
+	@catch(_table.runtimeServices.get_time(&time, null));
+
+	console.printn("%d-%s%d-%s%d %s%d:%s%d:%s%d UTC",
+		time.year,
+		@zero_pad(time.month),
+		time.month,
+		@zero_pad(time.day),
+		time.day,
+		@zero_pad(time.hour),
+		time.hour,
+		@zero_pad(time.minute),
+		time.minute,
+		@zero_pad(time.second),
+		time.second
+	);
+}
 
 // Error handling macros
 macro @catch(#func) @builtin {

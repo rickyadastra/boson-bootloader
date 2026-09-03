@@ -11,11 +11,12 @@ enum ResetType : uint {
 
 module uefi;
 import uefi::protocol::runtime_services;
+import uefi::protocol::time;
 
 struct RuntimeServices @packed {
     inline TableHeader header;
 
-    void* get_time;
+    GetTimeFn get_time;
     void* set_time;
     void* get_wakeup_time;
     void* set_wakeup_time;

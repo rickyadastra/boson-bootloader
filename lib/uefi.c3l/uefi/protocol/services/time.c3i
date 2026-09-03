@@ -1,0 +1,31 @@
+module uefi::protocol::time;
+
+const short UNSPECIFIED_TIMEZONE = 0x07FF;
+
+struct Time @packed {
+	ushort year;
+	char month;
+	char day;
+	char hour;
+	char minute;
+	char second;
+	char _pad1;
+	uint nanosecond;
+	short timezone;
+	DaylightFlags daylight;
+	char _pad2;
+}
+
+bitstruct DaylightFlags : char {
+	bool adjust : 0;
+	bool inDaylight : 1;
+	char reserved : 2..7;
+}
+
+struct TimeCapabilities @packed {
+	uint resolution;
+	uint accuracy;
+	bool setsToZero;
+}
+
+alias GetTimeFn = fn EfiStatus (Time*, TimeCapabilities*);

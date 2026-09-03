@@ -11,6 +11,7 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 
 	console.clear();
 	console.printn("Boson Bootloader for Muon Kernel - v2");
+	boson::print_boot_time();
 	console.print_newline();
 
 	// open volume root
@@ -63,7 +64,6 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 	// get acpi table addr
 	// get memory map
 	// bootstrap kernel
-
 
 	console.printn("Press any key to shut down");
 	console.pause();
