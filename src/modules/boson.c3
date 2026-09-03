@@ -6,6 +6,8 @@ SystemTable* _table @private;
 Console console;
 MemoryManager mem;
 
+uptr kernelEntryPoint;
+
 // Error handling macros
 macro @catch(#func) @builtin {
 	if (catch f = efi_error(#func)) @throw(f);

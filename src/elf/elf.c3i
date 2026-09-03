@@ -24,7 +24,7 @@ constdef Arch : inline ushort {
 	X86_64 = 0x3e,
 }
 
-struct CommonHeader {
+struct CommonHeader @packed {
 	char[4] magic;
 	BitMode mode;
 	Endianess endianess;
@@ -36,7 +36,7 @@ struct CommonHeader {
 
 $assert(CommonHeader::size == 16);
 
-struct Elf64Header {
+struct Elf64Header @packed {
 	inline CommonHeader header;
 	Type type;
 	Arch arch;

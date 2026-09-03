@@ -32,15 +32,30 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 
 	// load kernel into memory
 	void* kernelBuf = file::load(kernelFile, kernelInfo);
-	console.pause();
 
 	// check elf header
-	if (!elf::check_header(kernelBuf, BitMode.BIT64, Arch.X86_64, Endianess.LITTLE_ENDIAN)) {
-		console.printn("Kernel file is not a valid ELF file");
+	bool? elfResult = elf::check_header(kernelBuf, BitMode.BIT64, Arch.X86_64, Endianess.LITTLE_ENDIAN);
+	if (catch f = elfResult) {
+		console.printn("Could not read kernel file header, reason %s", f.description);
 		return EfiStatus.UNSUPPORTED;
+	} else {
+		if (!elfResult) {
+			console.printn("Kernel file is not a valid ELF file");
+			return EfiStatus.UNSUPPORTED;
+		}
 	}
 
 	// get kernel entry point
+	uptr? entryPointResult = elf::get_entry_point(kernelBuf);
+	if (catch f = entryPointResult) {
+		console.printn("Could not read kernel entry point, reason %s", f.description);
+		return EfiStatus.UNSUPPORTED;
+	}
+	kernelEntryPoint = entryPointResult;
+	console.printn("Kernel entry point is %x", kernelEntryPoint);
+
+	console.pause();
+
 	// alloc+map stack
 	// map low 2mb
 	// map apic
