@@ -10,7 +10,7 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 	bootloader::init(table);
 
 	console.clear();
-	console.printn("Boson Bootloader for Muon Kernel - v2");
+	console.printn("Boson Bootloader for Muon Kernel");
 	boson::print_boot_time();
 	console.print_newline();
 
@@ -33,6 +33,7 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 
 	// load kernel into memory
 	void* kernelBuf = file::load(kernelFile, kernelInfo);
+	kernelRootPage = (PageTable*)mem.alloc_pages(1, true);
 
 	// check elf header
 	bool? elfResult = elf::check_header(kernelBuf, BitMode.BIT64, Arch.X86_64, Endianess.LITTLE_ENDIAN);
@@ -53,14 +54,18 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 		return EfiStatus.UNSUPPORTED;
 	}
 	kernelEntryPoint = entryPointResult;
-	console.printn("Kernel entry point is %x", kernelEntryPoint);
+	console.printn("Kernel entry point is at %x", kernelEntryPoint);
 
 	console.pause();
 
+	// map kernel programs to hh
+	if (catch f = bootloader::load_programs(kernelBuf)) {
+		console.printn("Could not load kernel programs, reason %s", f.description);
+		return EfiStatus.LOAD_ERROR;
+	}
+
 	// alloc+map stack
 	// map low 2mb
-	// map apic
-	// map kernel programs to hh
 	// get acpi table addr
 	// get memory map
 	// bootstrap kernel
