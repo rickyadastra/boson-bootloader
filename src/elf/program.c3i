@@ -1,0 +1,28 @@
+module elf;
+
+constdef SegmentType : uint {
+	NULL,
+	LOAD,
+	DYNAMIC,
+	INTERP,
+	NOTE,
+}
+
+bitstruct SegmentFlags : uint {
+	bool executable : 0;
+	bool writable : 1;
+	bool readable : 2;
+}
+
+struct Elf64ProgramHeader @packed {
+	SegmentType type;
+	SegmentFlags flags;
+
+	uptr fileOffset;
+	uptr vaddr;
+	ulong _undefined;
+
+	ulong fileSize;
+	ulong memSize;
+	ulong requiredAlignment;
+}

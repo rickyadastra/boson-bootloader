@@ -17,3 +17,7 @@ fn uptr? get_entry_point(void* buffer) {
 	if (buffer == null) return NO_BUFFER~;
 	return ((Elf64Header*)buffer).entryPoint;
 }
+
+fn Elf64ProgramHeader[] Elf64Header.get_programs(&self) {
+	return ((Elf64ProgramHeader*)((uptr)self + self.programOffset))[:self.programsCount];
+}
