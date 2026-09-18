@@ -1,5 +1,5 @@
 <p align="center">
-  <img alt="Boson Bootloader Logo" src="assets/logo.png" width=720/>
+  <img alt="Boson Bootloader Logo" src="assets/logo.png" height="180" style="width: auto; max-width: 100%; object-fit: contain;">
   <br>
   A <b>C3 UEFI bootloader</b> for the x86-64 architecture. Made for the <a href="https://github.com/rickyadastra/muon-kernel/">muon kernel</a>.
   <br><br>
