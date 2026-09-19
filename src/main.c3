@@ -37,6 +37,13 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 	void* kernelBuf = file::load(kernelFile, kernelInfo);
 	bootloader::prepare_page_table();
 
+	// bootloader payload
+	BootloaderPayload* payload = mem.alloc_pages(memory::@pages(BootloaderPayload::size), true);
+	if (catch f = mem.map(kernelRootPage, payload, (uptr)payload, memory::@pages(BootloaderPayload::size))) {
+		console.printn("Could not prepare bootloade payload, reason %s", f.description);
+		return EfiStatus.LOAD_ERROR;
+	}
+
 	// check elf header
 	bool? elfResult = elf::check_header(kernelBuf, BitMode.BIT64, Arch.X86_64, Endianess.LITTLE_ENDIAN);
 	if (catch f = elfResult) {
@@ -71,6 +78,11 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 		console.printn("Could not allocate kernel stack, reason %s", f.description);
 		return EfiStatus.LOAD_ERROR;
 	}
+	payload.stack = {
+		.size = (uint)kernelStackSize,
+		.base = kernelStackBase,
+		.end = kernelStackBase + kernelStackSize,
+	};
 
 	// map low 2mb
 	if (catch f = mem.map(kernelRootPage, (void*)0x0, 0x0, 1, true)) {

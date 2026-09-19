@@ -1,6 +1,8 @@
 module boson;
 
-constdef MemoryRegionType : uint {
+const usz MAX_MEMORY_REGIONS = 0x1000 / MemoryRegion::size;		// 128 entries
+
+enum MemoryRegionType : uint {
 	BOOTLOADER,
 	AVAILABLE,
 	FIRMWARE,
@@ -17,4 +19,19 @@ struct MemoryRegion {
 	usz size;
 }
 
-const usz MAX_MEMORY_REGIONS = 0x1000 / MemoryRegion::size;		// 128 entries
+struct BootloaderKernelStack {
+	uint size;
+	uptr base;
+	uptr end;
+}
+
+struct BootloaderPayload {
+	uptr pageTablePtr;
+	BootloaderKernelStack stack;
+	MemoryRegion* memoryRegionMap;
+	uint memoryRegionEntries;
+	ulong totalMemoryBytes;
+
+	// vendor tables
+	uptr rsdpAddr;
+}
