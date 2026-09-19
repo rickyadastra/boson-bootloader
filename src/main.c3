@@ -35,7 +35,7 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 
 	// load kernel into memory
 	void* kernelBuf = file::load(kernelFile, kernelInfo);
-	kernelRootPage = (PageTable*)mem.alloc_pages(1, true);
+	bootloader::prepare_page_table();
 
 	// check elf header
 	bool? elfResult = elf::check_header(kernelBuf, BitMode.BIT64, Arch.X86_64, Endianess.LITTLE_ENDIAN);

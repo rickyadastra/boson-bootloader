@@ -22,6 +22,13 @@ fn void init(SystemTable* table) {
 	boson::memoryRegions = boson::mem.alloc_pages(1);
 }
 
+macro void prepare_page_table() {
+	boson::kernelRootPage = (PageTable*)boson::mem.alloc_pages(1, true);
+
+	// self map table to 510
+	boson::kernelRootPage.[510] = { .addr = ((uptr)boson::kernelRootPage) >> 12, .writable = true, .present = true };
+}
+
 fn void? load_programs(void* buffer) {
 	if (buffer == null) $$unreachable();
 
