@@ -11,6 +11,11 @@ struct TableHeader {
     uint reserved;
 }
 
+struct ConfigurationTable {
+	EfiGuid vendorGuid;
+	void* vendorTable;
+}
+
 struct SystemTable {
     TableHeader header;
     EfiString firmwareVendor;
@@ -24,7 +29,7 @@ struct SystemTable {
     RuntimeServices* runtimeServices;
     BootServices* bootServices;
     ulong numberOfTableEntries;
-    void* configurationTable;
+	ConfigurationTable* configurationTable;
 }
 
 alias WChar = ushort;

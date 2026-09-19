@@ -79,6 +79,13 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 	}
 
 	// get acpi table addr
+	foreach (ConfigurationTable tb : table.configurationTable[:table.numberOfTableEntries]) {
+		if (guid::@compare(tb.vendorGuid, guid::ACPI_20_TABLE)) {
+			console.printn("Found ACPI 2.0 table @ %x", tb.vendorTable);
+			payload.rsdpAddr = (uptr)tb.vendorTable;
+		}
+	}
+
 	// get memory map
 	// bootstrap kernel
 

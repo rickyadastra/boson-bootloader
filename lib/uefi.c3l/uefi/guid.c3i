@@ -1,3 +1,12 @@
+module uefi;
+
+struct EfiGuid @packed {
+    uint data1;
+    ushort data2;
+    ushort data3;
+    char[8] data4;
+}
+
 module uefi::guid;
 
 const EfiGuid SIMPLE_TEXT_INPUT_PROTOCOL = { 0x387477c1, 0x69c7, 0x11d2, {0x8e,0x39,0x00,0xa0,0xc9,0x69,0x72,0x3b} };
@@ -9,11 +18,12 @@ const EfiGuid SIMPLE_FILE_SYSTEM_PROTOCOL = {0x0964e5b22, 0x6459, 0x11d2, {0x8e,
 const EfiGuid FILE_INFO = {0x09576e92, 0x6d3f, 0x11d2, {0x8e,0x39,0x00,0xa0,0xc9,0x69,0x72,0x3b} };
 const EfiGuid FILE_SYSTEM_INFO = {0x09576e93, 0x6d3f, 0x11d2, {0x8e,0x39,0x00,0xa0,0xc9,0x69,0x72,0x3b} };
 
-module uefi;
+// Configuration tables
+const EfiGuid ACPI_20_TABLE = { 0x8868e871, 0xe4f1, 0x11d3, {0xbc,0x22,0x00,0x80,0xc7,0x3c,0x88,0x81} };
 
-struct EfiGuid @packed {
-    uint data1;
-    ushort data2;
-    ushort data3;
-    char[8] data4;
+macro bool @compare(EfiGuid #a, EfiGuid #b) {
+	return #a.data1 == #b.data1
+		&& #a.data2 == #b.data2
+		&& #a.data3 == #b.data3
+		&& #a.data4 == #b.data4;
 }
