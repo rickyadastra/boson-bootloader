@@ -9,6 +9,9 @@ MemoryManager mem;
 uptr kernelEntryPoint;
 PageTable* kernelRootPage;
 
+MemoryRegion[MAX_MEMORY_REGIONS]* memoryRegions;
+usz memoryRegionSize;
+
 macro @zero_pad(#v) @local => (#v <= 9) ? "0" : "";
 
 macro print_boot_time() {
@@ -28,6 +31,15 @@ macro print_boot_time() {
 		@zero_pad(time.second),
 		time.second
 	);
+}
+
+macro add_memory_region(uptr base, uptr baseVirt, usz size, MemoryRegionType type) {
+	memoryRegions.[memoryRegionSize++] = {
+		.base = base,
+		.baseVirt = baseVirt,
+		.size = size,
+		.type = type,
+	};
 }
 
 // Error handling macros

@@ -17,6 +17,9 @@ fn void init(SystemTable* table) {
 	boson::_table = table;
 	boson::console = console::init(table);
 	boson::mem = memory::init(table);
+
+	// init memory regions array
+	boson::memoryRegions = boson::mem.alloc_pages(1);
 }
 
 fn void? load_programs(void* buffer) {
@@ -38,6 +41,7 @@ fn void? load_programs(void* buffer) {
 		if (zeroSz > 0) lang::memset((char*)paddr + program.fileSize, 0, zeroSz);
 		
 		// TODO: create memory map region
+		boson::add_memory_region((uptr)paddr, program.vaddr, pages, KERNEL);
 
 		// map vmem
 		boson::mem.map(boson::kernelRootPage, paddr, program.vaddr, pages)!;

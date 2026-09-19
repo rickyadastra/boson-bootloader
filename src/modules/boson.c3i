@@ -1,0 +1,20 @@
+module boson;
+
+constdef MemoryRegionType : uint {
+	BOOTLOADER,
+	AVAILABLE,
+	FIRMWARE,
+	ACPI,
+	MMIO,
+	RESERVED,
+	KERNEL,
+}
+
+struct MemoryRegion {
+	MemoryRegionType type;
+	uptr base;
+	uptr baseVirt;
+	usz size;
+}
+
+const usz MAX_MEMORY_REGIONS = 0x1000 / MemoryRegion::size;		// 128 entries
