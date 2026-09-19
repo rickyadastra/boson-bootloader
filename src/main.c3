@@ -73,6 +73,11 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 	}
 
 	// map low 2mb
+	if (catch f = mem.map(kernelRootPage, (void*)0x0, 0x0, 1, true)) {
+		console.printn("Could not map lower 2MB, reason %s", f.description);
+		return EfiStatus.LOAD_ERROR;
+	}
+
 	// get acpi table addr
 	// get memory map
 	// bootstrap kernel

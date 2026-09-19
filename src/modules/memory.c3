@@ -5,6 +5,7 @@ import uefi;
 faultdef TABLE_IS_NULL;
 
 const usz PAGE_SIZE = 0x1000;
+const usz PAGE_SIZE_HUGE = 0x200000;
 
 bitstruct PageTableEntry : ulong {
 	bool present : 0;
@@ -85,10 +86,12 @@ fn void MemoryManager.vmap_helper(&mem, PageTable* pml4, uptr paddr, uptr vaddr,
 	}
 }
 
-fn void? MemoryManager.map(&mem, PageTable* pml4, void* paddr, uptr vaddr, usz pages) {
+macro void? MemoryManager.map(&mem, PageTable* pml4, void* paddr, uptr vaddr, usz pages, bool $huge = false) {
 	if (&pml4 == null) return TABLE_IS_NULL~;
 
-	for (usz count = 0; count < pages; count++, paddr += PAGE_SIZE, vaddr += PAGE_SIZE) {
-		mem.vmap_helper(pml4, (uptr)paddr, vaddr);
+	var $pageSz = $huge ? PAGE_SIZE_HUGE : PAGE_SIZE; 
+
+	for (usz count = 0; count < pages; count++, paddr += $pageSz, vaddr += $pageSz) {
+		mem.vmap_helper(pml4, (uptr)paddr, vaddr, $huge);
 	}
 }
