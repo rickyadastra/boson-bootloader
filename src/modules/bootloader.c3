@@ -47,3 +47,13 @@ fn void? load_programs(void* buffer) {
 		boson::mem.map(boson::kernelRootPage, paddr, program.vaddr, pages)!;
 	}
 }
+
+fn void? prepare_stack(usz pages, uptr vaddr) {
+	void* paddr = boson::mem.alloc_pages(pages, true);
+	
+	boson::mem.map(boson::kernelRootPage, paddr, vaddr, pages)!;
+	boson::add_memory_region((uptr)paddr, vaddr, pages, KERNEL);
+
+	boson::kernelStackBase = vaddr;
+	boson::kernelStackSize = pages * memory::PAGE_SIZE;
+}

@@ -8,6 +8,8 @@ MemoryManager mem;
 
 uptr kernelEntryPoint;
 PageTable* kernelRootPage;
+uptr kernelStackBase;
+usz kernelStackSize;
 
 MemoryRegion[MAX_MEMORY_REGIONS]* memoryRegions;
 usz memoryRegionSize;

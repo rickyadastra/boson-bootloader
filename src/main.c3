@@ -5,6 +5,8 @@ import photon;
 import elf;
 
 const WString KERNEL_FILENAME = (WString)$$wstr16("\\EFI\\BOOT\\muon.sys");
+const usz KERNEL_STACK_SIZE = 4;
+const uptr KERNEL_STACK_BASE = 0xffffffff40000000;
 
 fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") {
 	bootloader::init(table);
@@ -65,6 +67,11 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 	}
 
 	// alloc+map stack
+	if (catch f = bootloader::prepare_stack(KERNEL_STACK_SIZE, KERNEL_STACK_BASE)) {
+		console.printn("Could not allocate kernel stack, reason %s", f.description);
+		return EfiStatus.LOAD_ERROR;
+	}
+
 	// map low 2mb
 	// get acpi table addr
 	// get memory map
