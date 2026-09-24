@@ -17,6 +17,3 @@
 After cloning this repository to your local machine, use `make` to build the bootloader. 
 You will find the compiled binary in the `build` folder.
 Executing `make run` will compile and run the booloader in a QEMU virtual machine.
-
-> [!IMPORTANT]
-> The Makefile is used to minimize command length. The c3c compiler will be run in full trust mode to execute linking and running scripts from the [scripts/](scripts) folder.
