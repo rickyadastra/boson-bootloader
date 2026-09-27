@@ -1,7 +1,6 @@
 module boson;
 
 import uefi;
-import photon;
 import elf;
 
 const WString KERNEL_FILENAME = (WString)$$wstr16("\\EFI\\BOOT\\muon.sys");
