@@ -28,7 +28,7 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 	FileProtocol* kernelFile;
 	FileInfo* kernelInfo;
 
-	root.open(&kernelFile, KERNEL_FILENAME, FileOpenMode.READ, 0);
+	@catch(root.open(&kernelFile, KERNEL_FILENAME, FileOpenMode.READ, 0));
 	kernelInfo = file::get_info(kernelFile);
 	console.printn("Kernel file found, size is %d bytes", kernelInfo.fileSize);
 
