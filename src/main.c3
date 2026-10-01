@@ -39,9 +39,17 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 	// bootloader payload
 	BootloaderPayload* payload = mem.alloc_pages(memory::@pages(BootloaderPayload::size), true);
 	if (catch f = mem.map(kernelRootPage, payload, (uptr)payload, memory::@pages(BootloaderPayload::size))) {
-		console.printn("Could not prepare bootloade payload, reason %s", f.description);
+		console.printn("Could not prepare bootloader payload, reason %s", f.description);
 		return EfiStatus.LOAD_ERROR;
 	}
+
+	if (catch f = mem.imap(
+		kernelRootPage, (void*)&bootloader::start_kernel, memory::@pages((uptr)&bootloader::TRAMP_END - (uptr)&bootloader::start_kernel)
+	)) {
+		console.printn("Could not map kernel trampoline, reason %s", f.description);
+		return EfiStatus.LOAD_ERROR;
+	}
+	console.printn("Kernel trampoline mapped @%x", &bootloader::start_kernel);
 
 	// check elf header
 	bool? elfResult = elf::check_header(kernelBuf, BitMode.BIT64, Arch.X86_64, Endianess.LITTLE_ENDIAN);

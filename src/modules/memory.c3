@@ -95,3 +95,7 @@ macro void? MemoryManager.map(&mem, PageTable* pml4, void* paddr, uptr vaddr, us
 		mem.vmap_helper(pml4, (uptr)paddr, vaddr, $huge);
 	}
 }
+
+macro void? MemoryManager.imap(&mem, PageTable* pml4, void* addr, usz pages, bool $huge = false) {
+	mem.map(pml4, addr, (uptr)addr, pages, $huge)!;
+}
