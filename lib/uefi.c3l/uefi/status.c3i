@@ -57,11 +57,66 @@ module uefi;
 
 import uefi::status;
 
-macro @efi_err($x) @private => (usz)((1l << ((usz::size * 8) - 1)) | $x);
+macro @efi_err($x) @private => (usz)((1ul << ((usz::size * 8) - 1)) | $x);
+macro @from_efi_err(#x) @private => (usz)((#x ^ (1ul << ((usz::size * 8) - 1)))+7); // add 7 warning to get the right ordinal
 macro @efi_warn($x) @private => (usz)$x;
 
-enum EfiStatus : ulong (usz raw, fault faultType) {
+constdef EfiStatus : ulong {
+	SUCCESS,
+    WARN_UNKNOWN_GLYPH = @efi_warn(1),
+    WARN_DELETE_FAILURE,
+    WARN_WRITE_FAILURE,
+    WARN_BUFFER_TOO_SMALL,
+    WARN_STALE_DATA,
+    WARN_FILE_SYSTEM,
+    WARN_RESET_REQUIRED,
+	LOAD_ERROR = @efi_err(1),
+    INVALID_PARAMETER,
+    UNSUPPORTED,
+    BAD_BUFFER_SIZE,
+    BUFFER_TOO_SMALL,
+    NOT_READY,
+    DEVICE_ERROR,
+    WRITE_PROTECTED,
+    OUT_OF_RESOURCES,
+    VOLUME_CORRUPTED,
+    VOLUME_FULL,
+    NO_MEDIA,
+    MEDIA_CHANGED,
+    NOT_FOUND,
+    ACCESS_DENIED,
+    NO_RESPONSE,
+    NO_MAPPING,
+    TIMEOUT,
+    NOT_STARTED,
+    ALREADY_STARTED,
+    ABORTED,
+    ICMP_ERROR,
+    TFTP_ERROR,
+    PROTOCOL_ERROR,
+    INCOMPATIBLE_VERSION,
+    SECURITY_VIOLATION,
+    CRC_ERROR,
+    END_OF_MEDIA,
+    UNKNOWN_29,
+    UNKNOWN_30,
+    END_OF_FILE,
+    INVALID_LANGUAGE,
+    COMPROMISED_DATA,
+    IP_ADDRESS_CONFLICT,
+    HTTP_ERROR,
+}
+
+enum EfiStatusInternal : ulong (usz raw, fault faultType) {
     SUCCESS                     { 0, error::NO_FAULT },
+
+    WARN_UNKNOWN_GLYPH          { @efi_warn(1), warning::UNKNOWN_GLYPH },
+    WARN_DELETE_FAILURE         { @efi_warn(2), warning::DELETE_FAILURE },
+    WARN_WRITE_FAILURE          { @efi_warn(3), warning::WRITE_FAILURE },
+    WARN_BUFFER_TOO_SMALL       { @efi_warn(4), warning::BUFFER_TOO_SMALL },
+    WARN_STALE_DATA             { @efi_warn(5), warning::STALE_DATA },
+    WARN_FILE_SYSTEM            { @efi_warn(6), warning::FILE_SYSTEM },
+    WARN_RESET_REQUIRED         { @efi_warn(7), warning::RESET_REQUIRED },
 
     LOAD_ERROR                  { @efi_err(1), error::LOAD_ERROR },
     INVALID_PARAMETER           { @efi_err(2), error::INVALID_PARAMETER },
@@ -98,14 +153,6 @@ enum EfiStatus : ulong (usz raw, fault faultType) {
     COMPROMISED_DATA            { @efi_err(33), error::COMPROMISED_DATA },
     IP_ADDRESS_CONFLICT         { @efi_err(34), error::IP_ADDRESS_CONFLICT },
     HTTP_ERROR                  { @efi_err(35), error::HTTP_ERROR },
-
-    WARN_UNKNOWN_GLYPH          { @efi_warn(1), warning::UNKNOWN_GLYPH },
-    WARN_DELETE_FAILURE         { @efi_warn(2), warning::DELETE_FAILURE },
-    WARN_WRITE_FAILURE          { @efi_warn(3), warning::WRITE_FAILURE },
-    WARN_BUFFER_TOO_SMALL       { @efi_warn(4), warning::BUFFER_TOO_SMALL },
-    WARN_STALE_DATA             { @efi_warn(5), warning::STALE_DATA },
-    WARN_FILE_SYSTEM            { @efi_warn(6), warning::FILE_SYSTEM },
-    WARN_RESET_REQUIRED         { @efi_warn(7), warning::RESET_REQUIRED },
 }
 
 <*
@@ -115,11 +162,12 @@ macro bool? efi_error(EfiStatus status, bool catchWarnings = true) @builtin {
     switch {
         case status == SUCCESS: return false;
 
-        case (usz)status >= EfiStatus.WARN_UNKNOWN_GLYPH.raw && (usz)status <= EfiStatus.WARN_RESET_REQUIRED.raw:
-            return catchWarnings ? status.faultType~ : true;
+        case status >= EfiStatus.WARN_UNKNOWN_GLYPH && status <= EfiStatus.WARN_RESET_REQUIRED:
+            EfiStatusInternal statusInternal = EfiStatusInternal::from_ordinal((ulong)status);
+            return catchWarnings ? statusInternal.faultType~ : true;
 
-        case (usz)status >= EfiStatus.LOAD_ERROR.raw && (usz)status <= EfiStatus.HTTP_ERROR.raw:
-            return status.faultType~;
+        case status >= EfiStatus.LOAD_ERROR && status <= EfiStatus.HTTP_ERROR:
+            return EfiStatusInternal::from_ordinal(@from_efi_err((ulong)status)).faultType~;
     }
 
     return error::UNKNOWN_STATUS~;
