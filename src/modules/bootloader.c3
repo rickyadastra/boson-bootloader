@@ -65,7 +65,7 @@ fn void? prepare_stack(usz pages, uptr vaddr) {
 	boson::kernelStackSize = pages * memory::PAGE_SIZE;
 }
 
-macro get_efi_memory_map() {
+macro MemoryDescriptor*? @get_memory_map(usz #usable, usz #unusable) {
 	ulong mapKey, descSz, size;
 	uint ver;
 	MemoryDescriptor* map = null;
@@ -85,11 +85,70 @@ macro get_efi_memory_map() {
 	
 	boson::memoryMapKey = mapKey;
 
+	MemoryRegionType lastType = RESERVED;
+	uptr base = -1;
+	uptr lastBase = -1;
+	usz length;
+	
 	foreach (usz i, MemoryDescriptor desc : map[:(size/descSz)]) {
 		boson::console.printn("[%d]: %s @ %x:%x -> %x (%d pages)", i, 
 			desc.type.description, desc.physicalStart, desc.physicalStart+(desc.numberOfPages*memory::PAGE_SIZE)-1,
 			desc.virtualStart, desc.numberOfPages);
+
+		if (desc.type == ACPI_RECLAIM) {
+			boson::mem.map(boson::kernelRootPage, (void*)desc.physicalStart, desc.virtualStart, desc.numberOfPages)!;
+		}
+
+		// can't add to payload memory regions if full
+		if (boson::memoryRegionSize >= boson::MAX_MEMORY_REGIONS) continue;
+
+		MemoryRegionType type;
+		switch (desc.type) {
+			case LOADER_DATA:
+				type = BOOTLOADER;
+				#usable += desc.numberOfPages;
+			case LOADER_CODE:
+			case BOOT_SERVICES_CODE:
+			case CONVENTIONAL:
+			case BOOT_SERVICES_DATA:
+				type = AVAILABLE;
+				#usable += desc.numberOfPages;
+			case RUNTIME_SERVICES_CODE:
+			case RUNTIME_SERVICES_DATA:
+				type = FIRMWARE;
+				#unusable += desc.numberOfPages;
+			case ACPI_RECLAIM:
+			case ACPI_NVS:
+				type = ACPI;
+				#unusable += desc.numberOfPages;
+			case MEMORY_MAPPED_IO:
+			case MEMORY_MAPPED_IO_PORT_SPACE:
+				type = MMIO;
+				#unusable += desc.numberOfPages;
+			case UNUSABLE:
+			case PAL_CODE:
+			case RESERVED:
+			default:
+				type = RESERVED;
+				#unusable += desc.numberOfPages;
+		}
+
+		if (lastType == type && base + length == desc.physicalStart) {
+			length += desc.numberOfPages * memory::PAGE_SIZE;
+		} else {
+			if (base != -1) boson::add_memory_region(base, 0, length, lastType);
+
+			lastBase = base;
+			base = desc.physicalStart;
+			lastType = type;
+			length = desc.numberOfPages * memory::PAGE_SIZE;
+		}
 	}
+
+	if (lastBase != base) boson::add_memory_region(base, 0, length, lastType);
+
+	#usable *= memory::PAGE_SIZE;
+	#unusable *= memory::PAGE_SIZE;
 
 	return map;
 }

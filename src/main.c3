@@ -108,10 +108,17 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 	}
 
 	// get memory map
-	usz descSz, size;
-	if (catch f = bootloader::get_efi_memory_map()) {
+	usz descSz, size, usable, unusable;
+	if (catch f = bootloader::@get_memory_map(usable, unusable)) {
 		console.printn("error on map");
 	}
+
+	foreach (usz i, MemoryRegion reg : boson::memoryRegions) {
+		if (i >= boson::memoryRegionSize) break;
+		console.printn("%d: %s %x:%x", i, reg.type.description, reg.base, reg.base+reg.size-1);
+	}
+
+	console.printn("Usable memory: %d KB. Total memory: %d KB.", usable/1024, (usable+unusable)/1024);
 
 	// bootstrap kernel
 
