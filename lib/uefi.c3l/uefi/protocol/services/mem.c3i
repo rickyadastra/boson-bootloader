@@ -31,4 +31,6 @@ struct MemoryDescriptor {
     uptr virtualStart;
     ulong numberOfPages;
     ulong attribute;
+	// reserved padding
+	ulong _rsvd;
 }

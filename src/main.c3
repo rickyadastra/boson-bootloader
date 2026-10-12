@@ -43,6 +43,8 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 		return EfiStatus.LOAD_ERROR;
 	}
 
+	payload.pageTablePtr = (uptr)kernelRootPage;
+
 	if (catch f = mem.imap(
 		kernelRootPage, (void*)&bootloader::start_kernel, memory::@pages((uptr)&bootloader::TRAMP_END - (uptr)&bootloader::start_kernel)
 	)) {
@@ -106,6 +108,11 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 	}
 
 	// get memory map
+	usz descSz, size;
+	if (catch f = bootloader::get_efi_memory_map()) {
+		console.printn("error on map");
+	}
+
 	// bootstrap kernel
 
 	console.printn("Press any key to shut down");

@@ -64,3 +64,32 @@ fn void? prepare_stack(usz pages, uptr vaddr) {
 	boson::kernelStackBase = vaddr;
 	boson::kernelStackSize = pages * memory::PAGE_SIZE;
 }
+
+macro get_efi_memory_map() {
+	ulong mapKey, descSz, size;
+	uint ver;
+	MemoryDescriptor* map = null;
+
+	EfiStatus status = boson::_table.bootServices.get_memory_map(&size, null, &mapKey, &descSz, &ver);
+	if (status == BUFFER_TOO_SMALL) {
+		boson::console.printn("buffer too small, required %d bytes, requesting %d (desc size %d)", 
+			size, size + 2*descSz, descSz);
+		map = (MemoryDescriptor*)boson::mem.alloc(size + 2*descSz);
+		((char*)map)[:(size + 2*descSz)] = 0;
+	} else {
+		return error::LOAD_ERROR~;
+	}
+
+	status = boson::_table.bootServices.get_memory_map(&size, map, &mapKey, &descSz, &ver);
+	if (efi_error(status)!) return error::LOAD_ERROR~;
+	
+	boson::memoryMapKey = mapKey;
+
+	foreach (usz i, MemoryDescriptor desc : map[:(size/descSz)]) {
+		boson::console.printn("[%d]: %s @ %x:%x -> %x (%d pages)", i, 
+			desc.type.description, desc.physicalStart, desc.physicalStart+(desc.numberOfPages*memory::PAGE_SIZE)-1,
+			desc.virtualStart, desc.numberOfPages);
+	}
+
+	return map;
+}
