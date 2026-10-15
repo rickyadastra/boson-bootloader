@@ -118,14 +118,21 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 	}
 
 	console.printn("Usable memory: %d KB. Total memory: %d KB.", usable/1024, (usable+unusable)/1024);
+	payload.memoryRegionMap = boson::memoryRegions;
+	payload.memoryRegionEntries = (uint)boson::memoryRegionSize;
+	payload.totalMemoryBytes = usable+unusable;
 
 	// bootstrap kernel
-
-	console.printn("Press any key to shut down");
-	console.pause();
-
-	console.printn("Shutting down...");
-	shutdown();
+	ulong key, tmp;
+	@expect(table.bootServices.get_memory_map(&tmp, null, &key, null, null), error::BUFFER_TOO_SMALL) {
+		@catch(table.bootServices.exit_boot_services(handle, key));
+		bootloader::start_kernel(
+			boson::kernelStackBase + boson::kernelStackSize, 
+			(uptr)boson::kernelRootPage, 
+			boson::kernelEntryPoint, 
+			payload
+		);
+	};
 
 	return EfiStatus.SUCCESS;
 }
