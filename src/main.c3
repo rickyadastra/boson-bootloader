@@ -51,7 +51,8 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 		console.printn("Could not map kernel trampoline, reason %s", f.description);
 		return EfiStatus.LOAD_ERROR;
 	}
-	console.printn("Kernel trampoline mapped @%x", &bootloader::start_kernel);
+
+	console.printn("Kernel trampoline mapped @ %x", &bootloader::start_kernel);
 
 	// check elf header
 	bool? elfResult = elf::check_header(kernelBuf, BitMode.BIT64, Arch.X86_64, Endianess.LITTLE_ENDIAN);
@@ -73,8 +74,6 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 	}
 	kernelEntryPoint = entryPointResult;
 	console.printn("Kernel entry point is at %x", kernelEntryPoint);
-
-	console.pause();
 
 	// map kernel programs to hh
 	if (catch f = bootloader::load_programs(kernelBuf)) {

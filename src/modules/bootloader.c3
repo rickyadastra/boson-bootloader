@@ -91,10 +91,6 @@ macro MemoryDescriptor*? @get_memory_map(usz #usable, usz #unusable) {
 	usz length;
 	
 	foreach (usz i, MemoryDescriptor desc : map[:(size/descSz)]) {
-		boson::console.printn("[%d]: %s @ %x:%x -> %x (%d pages)", i, 
-			desc.type.description, desc.physicalStart, desc.physicalStart+(desc.numberOfPages*memory::PAGE_SIZE)-1,
-			desc.virtualStart, desc.numberOfPages);
-
 		if (desc.type == ACPI_RECLAIM) {
 			boson::mem.map(boson::kernelRootPage, (void*)desc.physicalStart, desc.virtualStart, desc.numberOfPages)!;
 		}
