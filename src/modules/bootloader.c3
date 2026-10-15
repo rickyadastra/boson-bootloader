@@ -48,7 +48,7 @@ fn void? load_programs(void* buffer) {
 		if (zeroSz > 0) lang::memset((char*)paddr + program.fileSize, 0, zeroSz);
 		
 		// TODO: create memory map region
-		boson::add_memory_region((uptr)paddr, program.vaddr, pages, KERNEL);
+		boson::add_memory_region((uptr)paddr, program.vaddr, pages * memory::PAGE_SIZE, KERNEL);
 
 		// map vmem
 		boson::mem.map(boson::kernelRootPage, paddr, program.vaddr, pages)!;
@@ -59,7 +59,7 @@ fn void? prepare_stack(usz pages, uptr vaddr) {
 	void* paddr = boson::mem.alloc_pages(pages, true);
 	
 	boson::mem.map(boson::kernelRootPage, paddr, vaddr, pages)!;
-	boson::add_memory_region((uptr)paddr, vaddr, pages, KERNEL);
+	boson::add_memory_region((uptr)paddr, vaddr, pages * memory::PAGE_SIZE, KERNEL);
 
 	boson::kernelStackBase = vaddr;
 	boson::kernelStackSize = pages * memory::PAGE_SIZE;
