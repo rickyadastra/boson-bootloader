@@ -109,7 +109,12 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 	// get memory map
 	usz descSz, size, usable, unusable;
 	if (catch f = bootloader::@get_memory_map(usable, unusable)) {
-		console.printn("error on map");
+		console.printn("Error while creating memory regions map");
+	}
+
+	if (catch f = mem.imap(boson::kernelRootPage, boson::memoryRegions, 1)) {
+		console.printn("Could not map memory regions map, reason %s", f.description);
+		return EfiStatus.LOAD_ERROR;
 	}
 
 	foreach (usz i, MemoryRegion reg : boson::memoryRegions) {
