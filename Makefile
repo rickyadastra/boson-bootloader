@@ -1,5 +1,8 @@
 C3C 			:= c3c
-FLAGS 			:= --trust=full --warn-builtin=no
+C3C_FLAGS 		:= --trust=full --warn-builtin=no
+C3C_MIN_VER := 0.8.4
+C3C_VERSION := $(shell $(C3C) --version | awk '/C3 Compiler Version/ {print $$4}')
+
 BOOTLOADER_NAME := boson.efi
 BUILD_DIR		:= build
 BUILD_TARGET	:= $(BUILD_DIR)/$(BOOTLOADER_NAME)
@@ -19,8 +22,8 @@ QEMU_OPTIONS	:= -bios $(OVMF_PATH) \
 build: $(BUILD_TARGET)
 image: $(FAT_IMG)
 
-$(BUILD_TARGET):
-	@$(C3C) build $(FLAGS)
+$(BUILD_TARGET): check-ver
+	@$(C3C) build $(C3C_FLAGS)
 
 $(FAT_IMG): $(BUILD_TARGET)
 	@dd if=/dev/zero of=$@ bs=1k count=1440
@@ -35,3 +38,10 @@ run: $(FAT_IMG)
 clear:
 	@$(C3C) clean
 	@rm -rf ./build
+
+check-ver:
+	@RES=$$( { echo "$(C3C_VERSION)"; echo "$(C3C_MIN_VER)"; } | sort -V | head -n1 ); \
+	if [ "$$RES" != "$(C3C_MIN_VER)" ]; then \
+		echo "\nCurrent C3 Compiler version is $(C3C_VERSION), but at least version $(C3C_MIN_VER) is required.\nPlease update c3c (https://c3-lang.org/getting-started/prebuilt-binaries/) and retry.\n"; \
+		exit 1; \
+	fi \
