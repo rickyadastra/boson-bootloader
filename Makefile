@@ -23,7 +23,7 @@ build: $(BUILD_TARGET)
 image: $(FAT_IMG)
 
 $(BUILD_TARGET): check-ver
-	@$(C3C) build $(C3C_FLAGS)
+	@$(C3C) build $(C3C_FLAGS) --build-dir $(BUILD_DIR) --output-dir $(BUILD_DIR)
 
 $(FAT_IMG): $(BUILD_TARGET)
 	@dd if=/dev/zero of=$@ bs=1k count=1440
