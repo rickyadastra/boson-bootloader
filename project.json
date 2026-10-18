@@ -20,8 +20,8 @@
     "test-sources": [
         "test/**"
     ],
-    "build-dir": "build",
-    "output": "build",
+    "build-dir": ".build",
+    "output": ".build",
     "panicfn": "boson::bootloader::panicfn",
     "targets": {
         "boson": {

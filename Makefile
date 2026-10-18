@@ -1,10 +1,10 @@
 C3C 			:= c3c
 C3C_FLAGS 		:= --trust=full --warn-builtin=no
-C3C_MIN_VER := 0.8.4
-C3C_VERSION := $(shell $(C3C) --version | awk '/C3 Compiler Version/ {print $$4}')
+C3C_MIN_VER 	:= 0.8.4
+C3C_VERSION 	:= $(shell $(C3C) --version | awk '/C3 Compiler Version/ {print $$4}')
 
 BOOTLOADER_NAME := boson.efi
-BUILD_DIR		:= build
+BUILD_DIR		:= ./.build
 BUILD_TARGET	:= $(BUILD_DIR)/$(BOOTLOADER_NAME)
 FAT_IMG			:= $(BUILD_DIR)/fat.img
 OVMF_PATH		:= /usr/share/ovmf/OVMF.fd
@@ -37,7 +37,7 @@ run: $(FAT_IMG)
 
 clear:
 	@$(C3C) clean
-	@rm -rf ./build
+	@rm -rf $(BUILD_DIR)
 
 check-ver:
 	@RES=$$( { echo "$(C3C_VERSION)"; echo "$(C3C_MIN_VER)"; } | sort -V | head -n1 ); \
