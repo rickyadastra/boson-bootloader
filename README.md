@@ -18,7 +18,7 @@ Boson loads a ELF kernel binary, prepares its memory and transfers control to it
 ## Getting Started
 ### Requirements
 
-On Ubuntu 24.04, install [`c3c`](https://c3-lang.org/getting-started/prebuilt-binaries/#installing-on-ubuntu) by following the official guide, and the tools required ro build and run the image using the folllowing command:
+On Ubuntu 24.04, install [`c3c`](https://c3-lang.org/getting-started/prebuilt-binaries/#installing-on-ubuntu) by following the official guide, and the tools required to build and run the image using the folllowing command:
 ```sh
 sudo apt install lld mtools qemu-systems-x86 ovmf
 ```
@@ -35,9 +35,12 @@ mcopy -i build/fat.img <path/to/kernel.bin> ::/EFI/BOOT/muon.sys
 ```
 
 ### Compile and Run
+The compilation pass is executed by C3's project system.
+The Makefile orchestrates version checks and compilation of the bootloader binary. 
+The following commands are available:
 ```sh
-make        # build bootloader binary, build/boson.efi
-make image  # create build/fat.img with the bootloader binary
+make        # build bootloader binary, .build/boson.efi
+make image  # create .build/fat.img with the bootloader binary
 make run    # create the image and run it in QEMU with OVMF
 ```
 To rebuild all artifacts from scratch, run:
@@ -51,7 +54,7 @@ make clear
 | ---- | -------- |
 | `src/` | UEFI Application entry point, ELF loading, memory management and trampoline |
 | `lib/` | C3 libraries for UEFI definitons and shared functionality |
-| `build/` | Build-time folder containing bootloader binary and FAT image |
+| `.build/` | Build-time folder containing bootloader binary and FAT image |
 
 ## Development
 
