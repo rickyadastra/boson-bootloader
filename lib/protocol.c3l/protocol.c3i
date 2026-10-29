@@ -1,0 +1,70 @@
+module boson::protocol;
+
+macro @tag(#id) @local => 0x00001000u | (#id & 0xfffu);
+macro @rev(#maj, #min) @local => (#maj << 24) | #min;
+
+const uint PROTOCOL_REVISION = @rev(1, 0);
+
+struct BootInfoBlock {
+	ulong magic;
+	uint revision;
+	uint _reserved;
+	usz totalSize;
+	usz flags;
+	TagHeader* tags;
+}
+
+struct TagHeader {
+	TagId id;
+	uint size;
+}
+
+constdef TagId : uint {
+	TERMINATOR 	= 0,			// 0
+	MEMORY_MAP 	= @tag(0),		// 0x1000
+	HHDM,						// 0x1001
+	MODULES,					// 0x1002
+	FRAMEBUFFER,				// 0x1003
+	BOOT_TIME,					// 0x1004
+	RSDP,						// 0X1005
+	SYMBOLS_TABLE,				// 0x1006
+	UNWIND_TABLE,				// 0x1007
+}
+
+// --- Terminator Tag ---------------------------
+
+struct TagTerminator {
+	inline TagHeader header;
+}
+
+// --- Memory Map Tag ---------------------------
+
+enum MemoryType : uint {
+	USABLE,
+	RESERVED,
+	ACPI_RECLAIMABLE,
+	ACPI_NVS,
+	BAD,
+	BOOTLOADER,
+	KERNEL,
+}
+
+struct MemoryEntry {
+	uptr base;
+	uptr baseVirt;
+	usz length;
+	MemoryType type;
+}
+
+struct TagMemoryMap {
+	inline TagHeader header;
+	uint numOfEntries;
+	MemoryEntry[*] entries;
+}
+
+// --- HHDM Tag ---------------------------------
+
+struct TagHHDM {
+	inline TagHeader header;
+	uptr hhdmBase;
+}
