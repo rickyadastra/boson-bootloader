@@ -1,0 +1,10 @@
+{
+    "provides": "boson_protocol",
+    "sources": [
+        "./protocol.c3i",
+        "./builder.c3"
+    ],
+    "targets": {
+        "windows-x64": {}
+    }
+}
