@@ -3,7 +3,8 @@ module boson::protocol;
 macro @tag(#id) @local => 0x00001000u | (#id & 0xfffu);
 macro @rev(#maj, #min) @local => (#maj << 24) | #min;
 
-const uint PROTOCOL_REVISION = @rev(1, 0);
+const uint REVISION = @rev(1, 0);
+const ulong MAGIC = 0xB125_2080_3699_1188;
 
 struct BootInfoBlock {
 	ulong magic;
@@ -53,6 +54,7 @@ struct MemoryEntry {
 	uptr base;
 	uptr baseVirt;
 	usz length;
+	uint _reserved;
 	MemoryType type;
 }
 
