@@ -12,7 +12,7 @@ struct BootInfoBlock {
 	uint _reserved;
 	usz totalSize;
 	usz flags;
-	TagHeader* tags;
+	TagHeader[*] tags;
 }
 
 struct TagHeader {
@@ -61,6 +61,7 @@ struct MemoryEntry {
 struct TagMemoryMap {
 	inline TagHeader header;
 	uint numOfEntries;
+	uint _reserved;
 	MemoryEntry[*] entries;
 }
 
