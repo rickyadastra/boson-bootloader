@@ -71,7 +71,7 @@ struct TagStack {
 	inline TagHeader header;
 	void* base;
 	void* end;
-	usz size;
+	usz len;
 }
 
 // --- RSDP Tag ---------------------------------
@@ -87,7 +87,7 @@ macro TagTerminator terminator()
 	=> { .id = TERMINATOR, .size = TagTerminator::size };
 
 macro TagStack stack(void* base, usz size)
-	=> { .id = STACK, .size = TagStack::size, .base = base, .size = size, .end = base+size };
+	=> { .id = STACK, .size = TagStack::size, .base = base, .len = size, .end = base+size };
 
 macro TagMemoryMap memory_map()
 	=> { .id = MEMORY_MAP, .size = TagMemoryMap::size };
