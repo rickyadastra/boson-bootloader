@@ -32,6 +32,21 @@ constdef TagId : uint {
 	UNWIND_TABLE,				// 0x1007
 }
 
+macro BootInfoBlock.@foreach_tag(&self; @body(usz i, TagHeader* tag)) {
+	usz i = 0;
+	TagHeader* first = &(self.tags[0]);
+	TagHeader* tag = first;
+	usz tagSize = (self.totalSize - BootInfoBlock::size);
+
+	while (true) {
+		if ((uptr)tag >= (uptr)first + tagSize) break;
+
+		@body(i, tag);
+		tag = (TagHeader*)(((uptr)tag)+tag.size);
+		i++;
+	}
+}
+
 // --- Terminator Tag ---------------------------
 
 struct TagTerminator {
