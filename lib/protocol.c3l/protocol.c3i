@@ -23,7 +23,7 @@ struct TagHeader {
 constdef TagId : uint {
 	TERMINATOR 	= 0,			// 0
 	MEMORY_MAP 	= @tag(0),		// 0x1000
-	HHDM,						// 0x1001
+	STACK,						// 0x1001
 	MODULES,					// 0x1002
 	FRAMEBUFFER,				// 0x1003
 	BOOT_TIME,					// 0x1004
@@ -65,9 +65,32 @@ struct TagMemoryMap {
 	MemoryEntry[*] entries;
 }
 
-// --- HHDM Tag ---------------------------------
+// --- Stack Tag --------------------------------
 
-struct TagHHDM {
+struct TagStack {
 	inline TagHeader header;
-	uptr hhdmBase;
+	void* base;
+	void* end;
+	usz size;
 }
+
+// --- RSDP Tag ---------------------------------
+
+struct TagRsdp {
+	inline TagHeader header;
+	void* rsdp;
+}
+
+module boson::protocol::tag;
+
+macro TagTerminator terminator()
+	=> { .id = TERMINATOR, .size = TagTerminator::size };
+
+macro TagStack stack(void* base, usz size)
+	=> { .id = STACK, .size = TagStack::size, .base = base, .size = size, .end = base+size };
+
+macro TagMemoryMap memory_map()
+	=> { .id = MEMORY_MAP, .size = TagMemoryMap::size };
+
+macro TagRsdp rsdp(void* rsdp) 
+	=> { .id = RSDP, .size = TagRsdp::size, .rsdp = rsdp };
