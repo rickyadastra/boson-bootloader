@@ -40,6 +40,17 @@ macro bool BibBuilder.@append(&self, #tag) {
 	return false;
 }
 
+macro void? BibBuilder.@append_memory_map(&self, TagMemoryMap #tag, MemoryEntry[] #entries) {
+	if (!self.@append(#tag)) return INSUFFICIENT_SIZE~;
+
+	MemoryEntry* cur = (MemoryEntry*)(self.cursor - MemoryEntry::size*#tag.numOfEntries);
+
+	foreach (MemoryEntry entry : #entries) {
+		*cur = entry;
+		cur++;
+	}
+}
+
 macro BootInfoBlock*? BibBuilder.complete(&self) {
 	if (!self.@append(tag::terminator())) return INSUFFICIENT_SIZE~;
 
