@@ -77,6 +77,7 @@ struct TagMemoryMap {
 	inline TagHeader header;
 	uint numOfEntries;
 	uint _reserved;
+	ulong totalBytes;
 	MemoryEntry[*] entries;
 }
 
@@ -104,8 +105,9 @@ macro TagTerminator terminator()
 macro TagStack stack(void* base, usz size) 
 	=> { .id = STACK, .size = TagStack::size, .base = base, .len = size, .end = base+size };
 
-macro TagMemoryMap memory_map(usz numOfEntries) 
-	=> { .id = MEMORY_MAP, .size = TagMemoryMap::size + (uint)numOfEntries*MemoryEntry::size, .numOfEntries = (uint)numOfEntries };
+macro TagMemoryMap memory_map(usz numOfEntries, usz totalBytes) 
+	=> { .id = MEMORY_MAP, .size = TagMemoryMap::size + (uint)numOfEntries*MemoryEntry::size, 
+		.numOfEntries = (uint)numOfEntries, .totalBytes = totalBytes };
 
 macro TagRsdp rsdp(void* rsdp) 
 	=> { .id = RSDP, .size = TagRsdp::size, .rsdp = rsdp };

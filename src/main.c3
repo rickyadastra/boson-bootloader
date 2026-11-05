@@ -50,8 +50,6 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 		return EfiStatus.LOAD_ERROR;
 	}
 
-	// payload.pageTablePtr = (uptr)kernelRootPage;
-
 	if (catch f = mem.imap(
 		kernelRootPage, (void*)&bootloader::start_kernel, memory::@pages((uptr)&bootloader::TRAMP_END - (uptr)&bootloader::start_kernel)
 	)) {
@@ -96,12 +94,6 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 
 	builder.@append(tag::stack((void*)kernelStackBase, kernelStackSize));
 
-	payload.stack = {
-		.size = (uint)kernelStackSize,
-		.base = kernelStackBase,
-		.end = kernelStackBase + kernelStackSize,
-	};
-
 	// map low 2mb
 	if (catch f = mem.map(kernelRootPage, (void*)0x0, 0x0, 1, true)) {
 		console.printn("Could not map lower 2MB, reason %s", f.description);
@@ -112,7 +104,6 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 	foreach (ConfigurationTable tb : table.configurationTable[:table.numberOfTableEntries]) {
 		if (guid::@compare(tb.vendorGuid, guid::ACPI_20_TABLE)) {
 			console.printn("Found ACPI 2.0 table @ %x", tb.vendorTable);
-			payload.rsdpAddr = (uptr)tb.vendorTable;
 			builder.@append(tag::rsdp(tb.vendorTable));
 		}
 	}
@@ -123,13 +114,8 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 		console.printn("Error while creating memory entries map");
 	}
 
-	// if (catch f = mem.imap(boson::kernelRootPage, boson::memoryEntries, 1)) {
-	// 	console.printn("Could not map memory entries map, reason %s", f.description);
-	// 	return EfiStatus.LOAD_ERROR;
-	// }
-
 	if (catch builder.@append_memory_map(
-			tag::memory_map(boson::memoryEntriesCount), 
+			tag::memory_map(boson::memoryEntriesCount, usable+unusable), 
 			boson::memoryEntries.[:boson::memoryEntriesCount])
 		) {
 		console.printn("Error while populating boot info block memory entries");
@@ -142,9 +128,6 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 	}
 
 	console.printn("Usable memory: %d KB. Total memory: %d KB.", usable/1024, (usable+unusable)/1024);
-	// payload.memoryRegionMap = boson::memoryEntries;
-	payload.memoryRegionEntries = (uint)boson::memoryEntriesCount;
-	payload.totalMemoryBytes = usable+unusable;
 
 	BootInfoBlock*? bib = builder.complete();
 	if (catch f = bib) {
