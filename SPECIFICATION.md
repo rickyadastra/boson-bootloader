@@ -172,3 +172,21 @@ struct TagRsdp {
 
 **Identifier**: `0x00002000` - `0x0000FFFF`  
 **Purpose**: Range reserved for custom bootloader/kernel-specific tags.
+
+# Protocol Semantics
+
+The current specification revision is **`1.0`**.
+
+## Machine State at Entry
+
+Once control is transferred to the kernel, the following are to be expected:
+- Each program of the binary is loaded at its specified VMA
+- The `rip` register is the entry point defined in the ELF binary
+- The `rdi` register contains a pointer to the `BootInfoBlock` structure populated by the bootloader
+- The `rsp` register is `0xFFFFFFFF40003FF8`
+- The `rbp` register is `0xFFFFFFFF40004000`
+- All selector registers (`cs`, `ds`, `ss` etc.) are left untouched (UEFI defaults)
+- The GDT is in an undefined state
+- The IDT is in an undefined state; interrupts are disabled
+- Paging is active with a PML4 root page; ELF programs, bootloader payload, trampoline, memory regions map and the lowest 2MB of physical memory are mapped; `cr3` contains the physical address of such page table
+
