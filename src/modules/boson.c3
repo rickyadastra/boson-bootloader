@@ -12,8 +12,8 @@ uptr kernelStackBase;
 usz kernelStackSize;
 ulong memoryMapKey;
 
-MemoryRegion[MAX_MEMORY_REGIONS]* memoryRegions;
-usz memoryRegionSize;
+MemoryEntry[MAX_MEMORY_ENTRIES]* memoryEntries;
+usz memoryEntriesCount;
 
 macro @zero_pad(#v) @local => (#v <= 9) ? "0" : "";
 
@@ -36,11 +36,11 @@ macro print_boot_time() {
 	);
 }
 
-macro add_memory_region(uptr base, uptr baseVirt, usz size, MemoryRegionType type) {
-	memoryRegions.[memoryRegionSize++] = {
+macro add_memory_entry(uptr base, uptr baseVirt, usz size, protocol::MemoryType type) {
+	memoryEntries.[memoryEntriesCount++] = {
 		.base = base,
 		.baseVirt = baseVirt,
-		.size = size,
+		.length = size,
 		.type = type,
 	};
 }

@@ -1,6 +1,6 @@
 module boson;
 
-const usz MAX_MEMORY_REGIONS = 0x1000 / MemoryRegion::size;		// 128 entries
+const usz MAX_MEMORY_ENTRIES = 0x1000 / MemoryEntry::size;		// 128 entries
 
 enum MemoryRegionType : uint {
 	BOOTLOADER,
