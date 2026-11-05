@@ -3,6 +3,7 @@ module boson;
 import uefi;
 import elf;
 
+const usz MAX_MEMORY_ENTRIES = 0x1000 / MemoryEntry::size;						// 128 entries
 const WString KERNEL_FILENAME = (WString)$$wstr16("\\EFI\\BOOT\\muon.sys");
 const usz KERNEL_STACK_SIZE = 4;
 const uptr KERNEL_STACK_BASE = 0xffffffff40000000;
@@ -35,13 +36,6 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 	// load kernel into memory
 	void* kernelBuf = file::load(kernelFile, kernelInfo);
 	bootloader::prepare_page_table();
-
-	// bootloader payload
-	BootloaderPayload* payload = mem.alloc_pages(memory::@pages(BootloaderPayload::size), true);
-	if (catch f = mem.map(kernelRootPage, payload, (uptr)payload, memory::@pages(BootloaderPayload::size))) {
-		console.printn("Could not prepare bootloader payload, reason %s", f.description);
-		return EfiStatus.LOAD_ERROR;
-	}
 
 	const usz BIB_SIZE = 1; // pages
 	BibBuilder builder = protocol::builder::init((uptr)mem.alloc_pages(BIB_SIZE, true), BIB_SIZE*memory::PAGE_SIZE);
@@ -146,8 +140,6 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 		}
 	};
 
-	console.pause();
-
 	// bootstrap kernel
 	ulong key, tmp;
 	@expect(table.bootServices.get_memory_map(&tmp, null, &key, null, null), error::BUFFER_TOO_SMALL) {
@@ -156,7 +148,7 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 			boson::kernelStackBase + boson::kernelStackSize, 
 			(uptr)boson::kernelRootPage, 
 			boson::kernelEntryPoint, 
-			payload
+			bib
 		);
 	};
 

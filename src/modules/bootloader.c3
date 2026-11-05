@@ -47,7 +47,7 @@ fn void? load_programs(void* buffer) {
 		usz zeroSz = program.memSize - program.fileSize;
 		if (zeroSz > 0) lang::memset((char*)paddr + program.fileSize, 0, zeroSz);
 		
-		// TODO: create memory map region
+		// create memory map region
 		boson::add_memory_entry((uptr)paddr, program.vaddr, pages * memory::PAGE_SIZE, KERNEL);
 
 		// map vmem
