@@ -3,6 +3,7 @@ module boson;
 import uefi;
 import elf;
 
+const usz MAX_MEMORY_ENTRIES = 0x1000 / MemoryEntry::size;						// 128 entries
 const WString KERNEL_FILENAME = (WString)$$wstr16("\\EFI\\BOOT\\muon.sys");
 const usz KERNEL_STACK_SIZE = 4;
 const uptr KERNEL_STACK_BASE = 0xffffffff40000000;
@@ -36,14 +37,12 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 	void* kernelBuf = file::load(kernelFile, kernelInfo);
 	bootloader::prepare_page_table();
 
-	// bootloader payload
-	BootloaderPayload* payload = mem.alloc_pages(memory::@pages(BootloaderPayload::size), true);
-	if (catch f = mem.map(kernelRootPage, payload, (uptr)payload, memory::@pages(BootloaderPayload::size))) {
-		console.printn("Could not prepare bootloader payload, reason %s", f.description);
+	const usz BIB_SIZE = 1; // pages
+	BibBuilder builder = protocol::builder::init((uptr)mem.alloc_pages(BIB_SIZE, true), BIB_SIZE*memory::PAGE_SIZE);
+	if (catch f = mem.map(kernelRootPage, builder.bib, (uptr)builder.bib, BIB_SIZE)) {
+		console.printn("Could not map boot info block into memory, reason %s", f.description);
 		return EfiStatus.LOAD_ERROR;
 	}
-
-	payload.pageTablePtr = (uptr)kernelRootPage;
 
 	if (catch f = mem.imap(
 		kernelRootPage, (void*)&bootloader::start_kernel, memory::@pages((uptr)&bootloader::TRAMP_END - (uptr)&bootloader::start_kernel)
@@ -86,11 +85,8 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 		console.printn("Could not allocate kernel stack, reason %s", f.description);
 		return EfiStatus.LOAD_ERROR;
 	}
-	payload.stack = {
-		.size = (uint)kernelStackSize,
-		.base = kernelStackBase,
-		.end = kernelStackBase + kernelStackSize,
-	};
+
+	builder.@append(tag::stack((void*)kernelStackBase, kernelStackSize));
 
 	// map low 2mb
 	if (catch f = mem.map(kernelRootPage, (void*)0x0, 0x0, 1, true)) {
@@ -102,30 +98,47 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 	foreach (ConfigurationTable tb : table.configurationTable[:table.numberOfTableEntries]) {
 		if (guid::@compare(tb.vendorGuid, guid::ACPI_20_TABLE)) {
 			console.printn("Found ACPI 2.0 table @ %x", tb.vendorTable);
-			payload.rsdpAddr = (uptr)tb.vendorTable;
+			builder.@append(tag::rsdp(tb.vendorTable));
 		}
 	}
 
 	// get memory map
 	usz descSz, size, usable, unusable;
 	if (catch f = bootloader::@get_memory_map(usable, unusable)) {
-		console.printn("Error while creating memory regions map");
+		console.printn("Error while creating memory entries map");
 	}
 
-	if (catch f = mem.imap(boson::kernelRootPage, boson::memoryRegions, 1)) {
-		console.printn("Could not map memory regions map, reason %s", f.description);
+	if (catch builder.@append_memory_map(
+			tag::memory_map(boson::memoryEntriesCount, usable+unusable), 
+			boson::memoryEntries.[:boson::memoryEntriesCount])
+		) {
+		console.printn("Error while populating boot info block memory entries");
 		return EfiStatus.LOAD_ERROR;
 	}
 
-	foreach (usz i, MemoryRegion reg : boson::memoryRegions) {
-		if (i >= boson::memoryRegionSize) break;
-		console.printn("%d: %s %x:%x", i, reg.type.description, reg.base, reg.base+reg.size-1);
+	foreach (usz i, MemoryEntry me : boson::memoryEntries) {
+		if (i >= boson::memoryEntriesCount) break;
+		console.printn("%d: %s %x:%x", i, me.type.description, me.base, me.base+me.length-1);
 	}
 
 	console.printn("Usable memory: %d KB. Total memory: %d KB.", usable/1024, (usable+unusable)/1024);
-	payload.memoryRegionMap = boson::memoryRegions;
-	payload.memoryRegionEntries = (uint)boson::memoryRegionSize;
-	payload.totalMemoryBytes = usable+unusable;
+
+	BootInfoBlock*? bib = builder.complete();
+	if (catch f = bib) {
+		console.printn("Could not finalize boot info block, reason %s", f.description);
+		return EfiStatus.LOAD_ERROR;
+	}
+	
+	bib.@foreach_tag(; i, tag) {
+		console.printn("tag[%d] found: id=%x, size=%d", i, tag.id, tag.size);
+
+		if (tag.id == MEMORY_MAP) {
+			TagMemoryMap* mm = ((TagMemoryMap*)tag);
+			foreach (sz j, MemoryEntry entry : mm.entries[:mm.numOfEntries]) {
+				console.printn("\t%d: %s, size=%x, length=%x", j, entry.type.description, entry.base, entry.length);
+			}
+		}
+	};
 
 	// bootstrap kernel
 	ulong key, tmp;
@@ -135,7 +148,7 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 			boson::kernelStackBase + boson::kernelStackSize, 
 			(uptr)boson::kernelRootPage, 
 			boson::kernelEntryPoint, 
-			payload
+			bib
 		);
 	};
 
