@@ -98,7 +98,7 @@ struct TagMemoryMap {
 	inline TagHeader header;
 	uint numOfEntries;
 	uint _reserved;
-    ulong totalBytes;
+	ulong totalBytes;
 	MemoryEntry[*] entries;
 }
 ```

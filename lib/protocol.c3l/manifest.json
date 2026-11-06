@@ -5,6 +5,7 @@
         "./builder.c3"
     ],
     "targets": {
-        "windows-x64": {}
+        "windows-x64": {},
+        "elf-x64": {}
     }
 }
