@@ -1,9 +1,9 @@
 <p align="center">
-  <img alt="Photon Boot Protocol Logo" src="assets/logo.png" width=720/>
+  <img alt="Boson Boot Protocol Logo" src="assets/logo.png" width=720/>
 </p>
 
 The **Boson Boot Protocol** is a UEFI x86-64 boot specification designed to be simple, minimal and robust. 
-Specifically made for the [**Boson Bootloader**](../README.md) and the [**Muon Kernel**](https://github.com/rickyadastra/muon-kernel).
+Specifically made for the [**Boson Bootloader**](./README.md) and the [**Muon Kernel**](https://github.com/rickyadastra/muon-kernel).
 
 The official specification for the Boson Boot Protocol is written in C3 and it's implicitly backward-compatible with C and C++.
 
