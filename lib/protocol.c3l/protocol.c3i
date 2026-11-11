@@ -1,14 +1,18 @@
 module boson::protocol;
 
 macro @tag(#id) @local => 0x00001000u | (#id & 0xfffu);
-macro @rev(#maj, #min) @local => (#maj << 24) | #min;
 
-const uint REVISION = @rev(1, 0);
+const BibRevision REVISION = { 1, 0 };
 const ulong MAGIC = 0xB125_2080_3699_1188;
+
+bitstruct BibRevision : uint {
+	char major : 24..31;
+	ushort minor : 0..15;
+}
 
 struct BootInfoBlock {
 	ulong magic;
-	uint revision;
+	BibRevision revision;
 	uint _reserved;
 	usz totalSize;
 	usz flags;
