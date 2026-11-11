@@ -116,10 +116,12 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 		return EfiStatus.LOAD_ERROR;
 	}
 
-	foreach (usz i, MemoryEntry me : boson::memoryEntries) {
-		if (i >= boson::memoryEntriesCount) break;
-		console.printn("%d: %s %x:%x", i, me.type.description, me.base, me.base+me.length-1);
-	}
+	$if $feat(DEBUG):
+		foreach (usz i, MemoryEntry me : boson::memoryEntries) {
+			if (i >= boson::memoryEntriesCount) break;
+			console.printn("%d: %s %x:%x", i, me.type.description, me.base, me.base+me.length-1);
+		}
+	$endif
 
 	console.printn("Usable memory: %d KB. Total memory: %d KB.", usable/1024, (usable+unusable)/1024);
 
@@ -129,16 +131,19 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 		return EfiStatus.LOAD_ERROR;
 	}
 	
-	bib.@foreach_tag(; i, tag) {
-		console.printn("tag[%d] found: id=%x, size=%d", i, tag.id, tag.size);
+	$if $feat(DEBUG):
+		console.printn("Printing complete boot info block structure...");
+		bib.@foreach_tag(; i, tag) {
+			console.printn("tag[%d] found: id=%x, size=%d", i, tag.id, tag.size);
 
-		if (tag.id == MEMORY_MAP) {
-			TagMemoryMap* mm = ((TagMemoryMap*)tag);
-			foreach (sz j, MemoryEntry entry : mm.entries[:mm.numOfEntries]) {
-				console.printn("\t%d: %s, size=%x, length=%x", j, entry.type.description, entry.base, entry.length);
+			if (tag.id == MEMORY_MAP) {
+				TagMemoryMap* mm = ((TagMemoryMap*)tag);
+				foreach (sz j, MemoryEntry entry : mm.entries[:mm.numOfEntries]) {
+					console.printn("\t%d: %s, size=%x, length=%x", j, entry.type.description, entry.base, entry.length);
+				}
 			}
-		}
-	};
+		};
+	$endif
 
 	// bootstrap kernel
 	ulong key, tmp;
