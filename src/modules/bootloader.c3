@@ -18,8 +18,8 @@ fn void init(SystemTable* table) {
 	boson::console = console::init(table);
 	boson::mem = memory::init(table);
 
-	// init memory regions array
-	boson::memoryRegions = boson::mem.alloc_pages(1);
+	// init memory entries array
+	boson::memoryEntries = boson::mem.alloc_pages(1);
 }
 
 macro void prepare_page_table() {
@@ -47,8 +47,8 @@ fn void? load_programs(void* buffer) {
 		usz zeroSz = program.memSize - program.fileSize;
 		if (zeroSz > 0) lang::memset((char*)paddr + program.fileSize, 0, zeroSz);
 		
-		// TODO: create memory map region
-		boson::add_memory_region((uptr)paddr, program.vaddr, pages * memory::PAGE_SIZE, KERNEL);
+		// create memory map region
+		boson::add_memory_entry((uptr)paddr, program.vaddr, pages * memory::PAGE_SIZE, KERNEL);
 
 		// map vmem
 		boson::mem.map(boson::kernelRootPage, paddr, program.vaddr, pages)!;
@@ -59,7 +59,7 @@ fn void? prepare_stack(usz pages, uptr vaddr) {
 	void* paddr = boson::mem.alloc_pages(pages, true);
 	
 	boson::mem.map(boson::kernelRootPage, paddr, vaddr, pages)!;
-	boson::add_memory_region((uptr)paddr, vaddr, pages * memory::PAGE_SIZE, KERNEL);
+	boson::add_memory_entry((uptr)paddr, vaddr, pages * memory::PAGE_SIZE, KERNEL);
 
 	boson::kernelStackBase = vaddr;
 	boson::kernelStackSize = pages * memory::PAGE_SIZE;
@@ -72,8 +72,6 @@ macro MemoryDescriptor*? @get_memory_map(usz #usable, usz #unusable) {
 
 	EfiStatus status = boson::_table.bootServices.get_memory_map(&size, null, &mapKey, &descSz, &ver);
 	if (status == BUFFER_TOO_SMALL) {
-		boson::console.printn("buffer too small, required %d bytes, requesting %d (desc size %d)", 
-			size, size + 2*descSz, descSz);
 		map = (MemoryDescriptor*)boson::mem.alloc(size + 2*descSz);
 		((char*)map)[:(size + 2*descSz)] = 0;
 	} else {
@@ -85,7 +83,7 @@ macro MemoryDescriptor*? @get_memory_map(usz #usable, usz #unusable) {
 	
 	boson::memoryMapKey = mapKey;
 
-	MemoryRegionType lastType = RESERVED;
+	protocol::MemoryType lastType = RESERVED;
 	uptr base = -1;
 	uptr lastBase = -1;
 	usz length;
@@ -95,10 +93,10 @@ macro MemoryDescriptor*? @get_memory_map(usz #usable, usz #unusable) {
 			boson::mem.map(boson::kernelRootPage, (void*)desc.physicalStart, desc.virtualStart, desc.numberOfPages)!;
 		}
 
-		// can't add to payload memory regions if full
-		if (boson::memoryRegionSize >= boson::MAX_MEMORY_REGIONS) continue;
+		// can't add to payload memory entries if full
+		if (boson::memoryEntriesCount >= boson::MAX_MEMORY_ENTRIES) continue;
 
-		MemoryRegionType type;
+		protocol::MemoryType type;
 		switch (desc.type) {
 			case LOADER_DATA:
 				type = BOOTLOADER;
@@ -132,7 +130,7 @@ macro MemoryDescriptor*? @get_memory_map(usz #usable, usz #unusable) {
 		if (lastType == type && base + length == desc.physicalStart) {
 			length += desc.numberOfPages * memory::PAGE_SIZE;
 		} else {
-			if (base != -1) boson::add_memory_region(base, 0, length, lastType);
+			if (base != -1) boson::add_memory_entry(base, 0, length, lastType);
 
 			lastBase = base;
 			base = desc.physicalStart;
@@ -141,7 +139,7 @@ macro MemoryDescriptor*? @get_memory_map(usz #usable, usz #unusable) {
 		}
 	}
 
-	if (lastBase != base) boson::add_memory_region(base, 0, length, lastType);
+	if (lastBase != base) boson::add_memory_entry(base, 0, length, lastType);
 
 	#usable *= memory::PAGE_SIZE;
 	#unusable *= memory::PAGE_SIZE;

@@ -1,6 +1,8 @@
 module boson::bootloader;
 
-fn void start_kernel(uptr stack, uptr pml4, uptr entry, BootloaderPayload* payload) 
+import boson::protocol;
+
+fn void start_kernel(uptr stack, uptr pml4, uptr entry, BootInfoBlock* payload) 
 @naked @nostrip @noreturn @noinline @section(".tramp") {
 	// stack: rcx, pml4: rdx, entry: r8, payload: r9
 	asm {

@@ -1,0 +1,128 @@
+module boson::protocol;
+
+macro @tag(#id) @local => 0x00001000u | (#id & 0xfffu);
+
+const BibRevision REVISION = { 1, 0 };
+const ulong MAGIC = 0xB125_2080_3699_1188;
+
+bitstruct BibRevision : uint {
+	char major : 24..31;
+	ushort minor : 0..15;
+}
+
+struct BootInfoBlock {
+	ulong magic;
+	BibRevision revision;
+	uint _reserved;
+	usz totalSize;
+	usz flags;
+	TagHeader[*] tags;
+}
+
+struct TagHeader {
+	TagId id;
+	uint size;
+}
+
+constdef TagId : uint {
+	TERMINATOR 	= 0,			// 0
+	MEMORY_MAP 	= @tag(0),		// 0x1000
+	STACK,						// 0x1001
+	RSDP,						// 0X1002
+	BOOT_TIME,					// 0x1003
+	// Unimplemented, may change at any moment
+	FRAMEBUFFER,				// 0x1004
+	MODULES,					// 0x1005
+	SYMBOLS_TABLE,				// 0x1006
+	UNWIND_TABLE,				// 0x1007
+}
+
+macro BootInfoBlock.@foreach_tag(&self; @body(usz i, TagHeader* tag)) {
+	usz i = 0;
+	TagHeader* first = &(self.tags[0]);
+	TagHeader* tag = first;
+	usz tagSize = (self.totalSize - BootInfoBlock::size);
+
+	while (true) {
+		if ((uptr)tag >= (uptr)first + tagSize) break;
+
+		@body(i, tag);
+		tag = (TagHeader*)(((uptr)tag)+tag.size);
+		i++;
+	}
+}
+
+// --- Terminator Tag ---------------------------
+
+struct TagTerminator {
+	inline TagHeader header;
+}
+
+// --- Memory Map Tag ---------------------------
+
+enum MemoryType : uint {
+	BOOTLOADER,
+	AVAILABLE,
+	FIRMWARE,
+	ACPI,
+	MMIO,
+	RESERVED,
+	KERNEL,
+}
+
+struct MemoryEntry {
+	uptr base;
+	uptr baseVirt;
+	usz length;
+	uint _reserved;
+	MemoryType type;
+}
+
+struct TagMemoryMap {
+	inline TagHeader header;
+	uint numOfEntries;
+	uint _reserved;
+	ulong totalBytes;
+	MemoryEntry[*] entries;
+}
+
+// --- Stack Tag --------------------------------
+
+struct TagStack {
+	inline TagHeader header;
+	void* base;
+	void* end;
+	usz len;
+}
+
+// --- RSDP Tag ---------------------------------
+
+struct TagRsdp {
+	inline TagHeader header;
+	void* rsdp;
+}
+
+// --- Boot Time Tag ----------------------------
+
+struct TagBootTime {
+	inline TagHeader header;
+	ulong timestamp;
+}
+
+module boson::protocol::tag;
+
+macro TagTerminator terminator()
+	=> { .id = TERMINATOR, .size = TagTerminator::size };
+
+macro TagStack stack(void* base, usz size) 
+	=> { .id = STACK, .size = TagStack::size, .base = base, .len = size, .end = base+size };
+
+macro TagMemoryMap memory_map(usz numOfEntries, usz totalBytes) 
+	=> { .id = MEMORY_MAP, .size = TagMemoryMap::size + (uint)numOfEntries*MemoryEntry::size, 
+		.numOfEntries = (uint)numOfEntries, .totalBytes = totalBytes };
+
+macro TagRsdp rsdp(void* rsdp) 
+	=> { .id = RSDP, .size = TagRsdp::size, .rsdp = rsdp };
+
+macro TagBootTime boot_time(ulong bootTime)
+	=> { .id = BOOT_TIME, .size = TagBootTime::size, .timestamp = bootTime };
