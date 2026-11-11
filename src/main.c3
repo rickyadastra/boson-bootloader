@@ -11,9 +11,12 @@ const uptr KERNEL_STACK_BASE = 0xffffffff40000000;
 fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") {
 	bootloader::init(table);
 
+	Time bootTime;
+	@catch(table.runtimeServices.get_time(&bootTime, null));
+
 	console.clear();
 	console.printn("Boson Bootloader for Muon Kernel");
-	boson::print_boot_time();
+	boson::@print_time(bootTime);
 	console.print_newline();
 
 	// open volume root
@@ -43,6 +46,8 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 		console.printn("Could not map boot info block into memory, reason %s", f.description);
 		return EfiStatus.LOAD_ERROR;
 	}
+
+	builder.@append(tag::boot_time(boson::@time_to_epoch(bootTime)));
 
 	if (catch f = mem.imap(
 		kernelRootPage, (void*)&bootloader::start_kernel, memory::@pages((uptr)&bootloader::TRAMP_END - (uptr)&bootloader::start_kernel)

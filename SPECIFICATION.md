@@ -19,7 +19,7 @@ struct BootInfoBlock {
     uint _reserved;
     usz totalSize;
     usz flags;
-    TagHeader* tags;
+    TagHeader[*] tags;
 }
 ```
 
@@ -133,17 +133,24 @@ struct TagRsdp {
 }
 ```
 
+### Boot Time Tag 
+
+**Identifier**: `0x00001003`  
+**Purpose**: Captures UEFI clock state at boot time.
+
+The `timestamp` field contains the UNIX timestamp (seconds since January 1st, 1970 UTC). Kernel can use this value to estimate boot times. The value is `0` if an invalid datetime is set. 
+
+```c3
+struct TagBootTime {
+	inline TagHeader header;
+	ulong timestamp;
+}
+```
+
 ### Framebuffer Tag
 
 **Identifier**: *TBD*  
 **Purpose**: Describes video framebuffer configured by bootloader.
-
-*TBD*
-
-### Boot Time Tag 
-
-**Identifier**: *TBD*  
-**Purpose**: Captures UEFI clock state at boot time.
 
 *TBD*
 

@@ -17,23 +17,47 @@ usz memoryEntriesCount;
 
 macro @zero_pad(#v) @local => (#v <= 9) ? "0" : "";
 
-macro print_boot_time() {
-	Time time;
-	@catch(_table.runtimeServices.get_time(&time, null));
-
+macro @print_time(Time #time) {
 	console.printn("%d-%s%d-%s%d %s%d:%s%d:%s%d UTC",
-		time.year,
-		@zero_pad(time.month),
-		time.month,
-		@zero_pad(time.day),
-		time.day,
-		@zero_pad(time.hour),
-		time.hour,
-		@zero_pad(time.minute),
-		time.minute,
-		@zero_pad(time.second),
-		time.second
+		#time.year,
+		@zero_pad(#time.month),
+		#time.month,
+		@zero_pad(#time.day),
+		#time.day,
+		@zero_pad(#time.hour),
+		#time.hour,
+		@zero_pad(#time.minute),
+		#time.minute,
+		@zero_pad(#time.second),
+		#time.second
 	);
+}
+
+macro bool @is_leap_year(#year) => (#year % 4 == 0 && #year % 100 != 0) || (#year % 400 == 0);
+
+macro ulong @time_to_epoch(Time #time) {
+	if (#time.year < 1970) return 0;
+
+    ulong totalDays = 0;
+	const uint[13] DAYS_IN_MONTH = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+    for (usz y = 1970; y < #time.year; y++) {
+        totalDays += @is_leap_year(y) ? 366ul : 365ul;
+    }
+
+    for (usz m = 1; m < #time.month; m++) {
+        if (m == 2 && @is_leap_year(#time.year)) totalDays += 1;
+        totalDays += DAYS_IN_MONTH[m];
+    }
+
+    totalDays += #time.day - 1ul;
+
+    ulong totalSeconds = totalDays * 86400ul;
+    totalSeconds += #time.hour * 3600ul;
+    totalSeconds += #time.minute * 60ul;
+    totalSeconds += #time.second;
+
+    return totalSeconds;
 }
 
 macro add_memory_entry(uptr base, uptr baseVirt, usz size, protocol::MemoryType type) {
