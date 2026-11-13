@@ -45,7 +45,7 @@ struct FileInfo {
 	EfiTime createTime;
 	EfiTime lastAccessTime;
 	EfiTime editTime;
-	ulong attribute;
+	FileInfoAttribute attribute;
 	WChar[*] filename;
 }
 
@@ -56,4 +56,12 @@ struct FileSystemInfo {
 	ulong freeSpace;
 	uint blockSize;
 	WChar[*] volumeLabel;
+}
+
+bitstruct FileInfoAttribute : ulong {
+	bool readOnly : 0;
+	bool hidden : 1;
+	bool system : 2;
+	bool directory : 4;
+	bool archive : 5;
 }
