@@ -36,9 +36,6 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 	kernelInfo = file::get_info(kernelFile);
 	console.printn("Kernel file found, size is %d bytes", kernelInfo.fileSize);
 
-	// load modules from modules/ directory, skip if directory is  missing
-	modules::load_modules(root);
-
 	// load kernel into memory
 	void* kernelBuf = file::load(kernelFile, kernelInfo);
 	bootloader::prepare_page_table();
@@ -102,6 +99,17 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 		return EfiStatus.LOAD_ERROR;
 	}
 
+	// load modules from modules/ directory, skip if directory is  missing
+	modules::load_modules(root);
+
+	if (catch builder.@append_modules(
+			tag::modules(modules::loadedModulesCount),
+			modules::loadedModules[:modules::loadedModulesCount]
+		)) {
+		console.printn("Error while populating boot info block loaded modules");
+		return EfiStatus.LOAD_ERROR;
+	}
+
 	// get acpi table addr
 	foreach (ConfigurationTable tb : table.configurationTable[:table.numberOfTableEntries]) {
 		if (guid::@compare(tb.vendorGuid, guid::ACPI_20_TABLE)) {
@@ -144,11 +152,18 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 		bib.@foreach_tag(; i, tag) {
 			console.printn("tag[%d] found: id=%x, size=%d", i, tag.id, tag.size);
 
-			if (tag.id == MEMORY_MAP) {
-				TagMemoryMap* mm = ((TagMemoryMap*)tag);
-				foreach (sz j, MemoryEntry entry : mm.entries[:mm.numOfEntries]) {
-					console.printn("\t%d: %s, size=%x, length=%x", j, entry.type.description, entry.base, entry.length);
-				}
+			switch (tag.id) {
+				case MEMORY_MAP:
+					TagMemoryMap* mm = ((TagMemoryMap*)tag);
+					foreach (sz j, MemoryEntry entry : mm.entries[:mm.numOfEntries]) {
+						console.printn("\t%d: %s, size=%x, length=%x", j, entry.type.description, entry.base, entry.length);
+					}
+
+				case MODULES:
+					TagModules* mods = ((TagModules*)tag);
+					foreach (sz j, Module mod : mods.modules[:mods.numOfModules]) {
+						console.printn("\t%d %s, %d bytes, loaded @ %x", j, mod.name[:mod.nameLen], mod.size, mod.address);
+					}
 			}
 		};
 	$endif

@@ -3,19 +3,12 @@ module boson::modules;
 import uefi;
 import boson;
 
-struct LoadedModule {
-	uptr address;
-	uint size;
-	char nameLen;
-	char[32] name;
-}
-
 const WString MODULES_PATH = (WString)$$wstr16("\\EFI\\BOOT\\modules\\");
 const usz MODULES_BUFSIZE = 4096; 
 const usz MAX_MODULES_COUNT = 32; 
 
 char[MODULES_BUFSIZE] buf;
-LoadedModule[MAX_MODULES_COUNT] loadedModules;
+Module[MAX_MODULES_COUNT] loadedModules;
 usz loadedModulesCount = 0;
 
 fn void load_modules(FileProtocol* root) {
