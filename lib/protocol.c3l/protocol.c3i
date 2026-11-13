@@ -30,11 +30,9 @@ constdef TagId : uint {
 	STACK,						// 0x1001
 	RSDP,						// 0X1002
 	BOOT_TIME,					// 0x1003
+	MODULES,					// 0x1004
 	// Unimplemented, may change at any moment
-	FRAMEBUFFER,				// 0x1004
-	MODULES,					// 0x1005
-	SYMBOLS_TABLE,				// 0x1006
-	UNWIND_TABLE,				// 0x1007
+	FRAMEBUFFER,				// 0x1005
 }
 
 macro BootInfoBlock.@foreach_tag(&self; @body(usz i, TagHeader* tag)) {
@@ -109,7 +107,31 @@ struct TagBootTime {
 	ulong timestamp;
 }
 
+// --- Modules Tag ------------------------------
+
+struct Module {
+	uptr address;
+	uint size;
+	char nameLen;
+	char[11] _reserved;
+	char[32] name;
+}
+
+struct TagModules {
+	inline TagHeader header;
+	uint numOfModules;
+	uint _reserved;
+	Module[*] modules;
+}
+
 module boson::protocol::tag;
+
+$assert(TagTerminator::size % 8 == 0);
+$assert(TagStack::size % 8 == 0);
+$assert(TagMemoryMap::size % 8 == 0 && MemoryEntry::size % 8 == 0);
+$assert(TagRsdp::size % 8 == 0);
+$assert(TagBootTime::size % 8 == 0);
+$assert(TagModules::size % 8 == 0 && Module::size % 8 == 0);
 
 macro TagTerminator terminator()
 	=> { .id = TERMINATOR, .size = TagTerminator::size };
@@ -126,3 +148,7 @@ macro TagRsdp rsdp(void* rsdp)
 
 macro TagBootTime boot_time(ulong bootTime)
 	=> { .id = BOOT_TIME, .size = TagBootTime::size, .timestamp = bootTime };
+
+macro TagModules modules(usz numOfModules)
+	=> { .id = MODULES, .size = TagModules::size + (uint)numOfModules*Module::size,
+		 .numOfModules = (uint)numOfModules };
