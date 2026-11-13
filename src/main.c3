@@ -36,6 +36,9 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 	kernelInfo = file::get_info(kernelFile);
 	console.printn("Kernel file found, size is %d bytes", kernelInfo.fileSize);
 
+	// load modules from modules/ directory, skip if directory is  missing
+	modules::load_modules(root);
+
 	// load kernel into memory
 	void* kernelBuf = file::load(kernelFile, kernelInfo);
 	bootloader::prepare_page_table();
