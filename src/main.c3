@@ -123,7 +123,7 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 	// get memory map
 	usz descSz, size, usable, unusable;
 	if (catch f = bootloader::@get_memory_map(usable, unusable)) {
-		console.printn("Error while creating memory entries map");
+		console.printn("Error while creating memory entries map: %s", f.description);
 	}
 
 	if (catch builder.@append_memory_map(

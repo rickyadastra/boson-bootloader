@@ -71,16 +71,17 @@ macro MemoryDescriptor*? @get_memory_map(usz #usable, usz #unusable) {
 	MemoryDescriptor* map = null;
 
 	EfiStatus status = boson::_table.bootServices.get_memory_map(&size, null, &mapKey, &descSz, &ver);
-	if (status == BUFFER_TOO_SMALL) {
-		map = (MemoryDescriptor*)boson::mem.alloc(size + 2*descSz);
-		((char*)map)[:(size + 2*descSz)] = 0;
-	} else {
-		return error::LOAD_ERROR~;
+
+	while (status == BUFFER_TOO_SMALL) {
+		if (map != null) boson::mem.free(map); // free insufficient but allocated map
+
+		size += (descSz*2);
+		map = (MemoryDescriptor*)boson::mem.alloc(size);
+		((char*)map)[:size] = 0;
+
+		status = boson::_table.bootServices.get_memory_map(&size, map, &mapKey, &descSz, &ver);
 	}
 
-	status = boson::_table.bootServices.get_memory_map(&size, map, &mapKey, &descSz, &ver);
-	if (efi_error(status)!) return error::LOAD_ERROR~;
-	
 	boson::memoryMapKey = mapKey;
 
 	protocol::MemoryType lastType = RESERVED;
