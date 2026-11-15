@@ -59,8 +59,11 @@ fn void load_modules(FileProtocol* root) {
 		FileProtocol* moduleFile;
 		@catch(modulesDir.open(&moduleFile, &info.filename, FileOpenMode.READ, 0));
 
-		void* moduleBuf = boson::mem.alloc_pages(memory::@pages(info.fileSize));
+		usz pagesSz = memory::@pages(info.fileSize);
+		void* moduleBuf = boson::mem.alloc_pages(pagesSz);
 		@catch(moduleFile.read(&bufSz, moduleBuf));
+
+		boson::add_memory_entry((uptr)moduleBuf, 0, pagesSz*memory::PAGE_SIZE, MODULE);
 		
 		loadedModules[loadedModulesCount++] = {
 			.address = (uptr)moduleBuf,

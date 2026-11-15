@@ -84,6 +84,7 @@ enum MemoryType : uint {
 	MMIO,
 	RESERVED,
 	KERNEL,
+	MODULE,
 }
 
 struct MemoryEntry {
