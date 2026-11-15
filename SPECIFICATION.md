@@ -147,24 +147,36 @@ struct TagBootTime {
 }
 ```
 
+### Modules Tag 
+
+**Identifier**: `0x00001004`  
+**Purpose**: Describes additional loaded modules.
+
+If at least one (1) module is loaded correctly, this tag is present. Each module's `address` field is a page-aligned phyisical address pointing to the contents of the module. The `size` field contains the actual length in bytes of the contents. 
+
+Module `name`s are truncated 32 characters non-NULL-terminated strings. Kernel is advised to read `nameLen` bytes and form a valid string (in C3, a simple `String` slice is enough).
+
+```c3
+struct Module {
+	uptr address;
+	uint size;
+	char nameLen;
+	char[11] _reserved;
+	char[32] name;
+}
+
+struct TagModules {
+	inline TagHeader header;
+	uint numOfModules;
+	uint _reserved;
+	Module[*] modules;
+}
+```
+
 ### Framebuffer Tag
 
 **Identifier**: *TBD*  
 **Purpose**: Describes video framebuffer configured by bootloader.
-
-*TBD*
-
-### Modules Tag 
-
-**Identifier**: *TBD*   
-**Purpose**: Describes additional loaded modules (initrd, drivers, etc.)
-
-*TBD*
-
-### Symbols Table Tag
-
-**Identifier**: *TBD*  
-**Purpose**: Communicates the kernel binary's symbol table to the kernel.
 
 *TBD*
 
