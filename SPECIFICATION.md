@@ -174,17 +174,27 @@ struct TagModules {
 }
 ```
 
+### Unwind Info Tag
+
+**Identifier**: `0x00001005`  
+**Purpose**: Communicates the kernel binary's DWARF unwind table to the kernel.
+
+If a program with custom type `PT_MUON_DBG` is present, this tag is present. The `unwindTablePtr` is the virtual address where the DWARF unwind table resides as per ELF mapping. The `unwindTableSize` field is the bytes length of the table. 
+
+```c3
+const uint PT_MUON_DBG = 0x6D110D09;
+
+struct TagUnwindInfo {
+	inline TagHeader header;
+	uptr unwindTablePtr;
+	usz unwindTableSize;
+}
+```
+
 ### Framebuffer Tag
 
 **Identifier**: *TBD*  
 **Purpose**: Describes video framebuffer configured by bootloader.
-
-*TBD*
-
-### Unwind Table Tag
-
-**Identifier**: *TBD*  
-**Purpose**: Communicates the kernel binary's DWARF unwind table to the kernel.
 
 *TBD*
 
