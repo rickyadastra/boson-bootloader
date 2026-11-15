@@ -4,10 +4,8 @@ import uefi;
 import boson;
 
 const WString MODULES_PATH = (WString)$$wstr16("\\EFI\\BOOT\\modules\\");
-const usz MODULES_BUFSIZE = 4096; 
 const usz MAX_MODULES_COUNT = 32; 
 
-char[MODULES_BUFSIZE] buf;
 Module[MAX_MODULES_COUNT] loadedModules;
 usz loadedModulesCount = 0;
 
@@ -22,16 +20,34 @@ fn void load_modules(FileProtocol* root) {
 	FileInfo* modulesInfo = file::get_info(modulesDir);
 	boson::console.printn("Modules directory found, loading modules");
 
-	usz bufSize = modulesInfo.size;
+	usz bufSz = 0;
+	FileInfo* info = null;
 
 	while (true) {
-		bufSize = buf.len;
+		usz curSz = bufSz;
+		EfiStatus status = modulesDir.read(&curSz, info);
 
-		@catch(modulesDir.read(&bufSize, &&buf));
-		FileInfo* info = (FileInfo*)&&buf;
+		if (status == EfiStatus.BUFFER_TOO_SMALL) {
+			if (info != null) boson::mem.free(info);
 
+			bufSz = curSz;
+			info = boson::alloc(bufSz);
+
+			if (info == null) {
+				status = EfiStatus.OUT_OF_RESOURCES;
+				break;
+			}
+
+			status = modulesDir.read(&curSz, info);
+		}
+
+		if (catch f = efi_error(status)) {
+			boson::console.printn("Error while enumerating modules: %s", f.description);
+			return;
+		}
+
+		if (curSz == 0) break; // no more files
 		if (!info.attribute.archive) continue;
-		if (bufSize == 0) break;
 
 		usz i = 0;
 		char[32] name;
@@ -44,7 +60,7 @@ fn void load_modules(FileProtocol* root) {
 		@catch(modulesDir.open(&moduleFile, &info.filename, FileOpenMode.READ, 0));
 
 		void* moduleBuf = boson::mem.alloc_pages(memory::@pages(info.fileSize));
-		@catch(moduleFile.read(&bufSize, moduleBuf));
+		@catch(moduleFile.read(&bufSz, moduleBuf));
 		
 		loadedModules[loadedModulesCount++] = {
 			.address = (uptr)moduleBuf,
@@ -55,4 +71,7 @@ fn void load_modules(FileProtocol* root) {
 
 		boson::console.printn(" done @ %x", moduleBuf);
 	}
+
+	if (info != null) boson::mem.free(info);
+	modulesDir.close();
 }

@@ -102,12 +102,14 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 	// load modules from modules/ directory, skip if directory is  missing
 	modules::load_modules(root);
 
-	if (catch builder.@append_modules(
-			tag::modules(modules::loadedModulesCount),
-			modules::loadedModules[:modules::loadedModulesCount]
-		)) {
-		console.printn("Error while populating boot info block loaded modules");
-		return EfiStatus.LOAD_ERROR;
+	if (modules::loadedModulesCount > 0) {
+		if (catch builder.@append_modules(
+				tag::modules(modules::loadedModulesCount),
+				modules::loadedModules[:modules::loadedModulesCount]
+			)) {
+			console.printn("Error while populating boot info block loaded modules");
+			return EfiStatus.LOAD_ERROR;
+		}
 	}
 
 	// get acpi table addr
