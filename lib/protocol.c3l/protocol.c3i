@@ -31,8 +31,9 @@ constdef TagId : uint {
 	RSDP,						// 0X1002
 	BOOT_TIME,					// 0x1003
 	MODULES,					// 0x1004
+	UNWIND_INFO,				// 0x1005
 	// Unimplemented, may change at any moment
-	FRAMEBUFFER,				// 0x1005
+	FRAMEBUFFER,				// 0x1006
 }
 
 macro BootInfoBlock.@foreach_tag(&self; @body(usz i, TagHeader* tag)) {
@@ -125,6 +126,14 @@ struct TagModules {
 	Module[*] modules;
 }
 
+// --- Unwind Info Tag --------------------------
+
+struct TagUnwindInfo {
+	inline TagHeader header;
+	uptr unwindTablePtr;
+	usz unwindTableSize;
+}
+
 module boson::protocol::tag;
 
 $assert(TagTerminator::size % 8 == 0);
@@ -133,6 +142,7 @@ $assert(TagMemoryMap::size % 8 == 0 && MemoryEntry::size % 8 == 0);
 $assert(TagRsdp::size % 8 == 0);
 $assert(TagBootTime::size % 8 == 0);
 $assert(TagModules::size % 8 == 0 && Module::size % 8 == 0);
+$assert(TagUnwindInfo::size % 8 == 0);
 
 macro TagTerminator terminator()
 	=> { .id = TERMINATOR, .size = TagTerminator::size };
@@ -153,3 +163,7 @@ macro TagBootTime boot_time(ulong bootTime)
 macro TagModules modules(usz numOfModules)
 	=> { .id = MODULES, .size = TagModules::size + (uint)numOfModules*Module::size,
 		 .numOfModules = (uint)numOfModules };
+
+macro TagUnwindInfo unwind_info(uptr tablePtr, usz tableSz)
+	=> { .id = UNWIND_INFO, .size = TagUnwindInfo::size, .unwindTablePtr = tablePtr,
+		 .unwindTableSize = tableSz };

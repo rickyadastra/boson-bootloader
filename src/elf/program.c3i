@@ -6,6 +6,7 @@ constdef SegmentType : uint {
 	DYNAMIC,
 	INTERP,
 	NOTE,
+	MUON_DBG = 0x6D110D09,	// "muon" ^ "\0dbg"
 }
 
 bitstruct SegmentFlags : uint {

@@ -10,7 +10,8 @@ uptr kernelEntryPoint;
 PageTable* kernelRootPage;
 uptr kernelStackBase;
 usz kernelStackSize;
-ulong memoryMapKey;
+uptr unwindTablePtr;
+usz unwindTableSize;
 
 MemoryEntry[MAX_MEMORY_ENTRIES]* memoryEntries;
 usz memoryEntriesCount;

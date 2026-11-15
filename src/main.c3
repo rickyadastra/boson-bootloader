@@ -85,6 +85,10 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 		return EfiStatus.LOAD_ERROR;
 	}
 
+	if (boson::unwindTablePtr != 0 && boson::unwindTableSize > 0) {
+		builder.@append(tag::unwind_info(boson::unwindTablePtr, boson::unwindTableSize));
+	}
+
 	// alloc+map stack
 	if (catch f = bootloader::prepare_stack(KERNEL_STACK_SIZE, KERNEL_STACK_BASE)) {
 		console.printn("Could not allocate kernel stack, reason %s", f.description);

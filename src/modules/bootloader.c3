@@ -36,7 +36,7 @@ fn void? load_programs(void* buffer) {
 	Elf64ProgramHeader[] programs = header.get_programs();
 
 	foreach (idx, Elf64ProgramHeader* &program : programs) {
-		if (program.type != LOAD) continue;
+		if (program.type != LOAD && program.type != MUON_DBG) continue;
 
 		// copy from binary to memory
 		usz pages = memory::@pages(program.memSize);
@@ -52,6 +52,11 @@ fn void? load_programs(void* buffer) {
 
 		// map vmem
 		boson::mem.map(boson::kernelRootPage, paddr, program.vaddr, pages)!;
+
+		if (program.type == MUON_DBG) {
+			boson::unwindTablePtr = program.vaddr;
+			boson::unwindTableSize = program.fileSize;
+		}
 	}
 }
 
@@ -81,8 +86,6 @@ macro MemoryDescriptor*? @get_memory_map(usz #usable, usz #unusable) {
 
 		status = boson::_table.bootServices.get_memory_map(&size, map, &mapKey, &descSz, &ver);
 	}
-
-	boson::memoryMapKey = mapKey;
 
 	protocol::MemoryType lastType = RESERVED;
 	uptr base = -1;
