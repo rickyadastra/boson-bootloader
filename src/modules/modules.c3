@@ -59,9 +59,10 @@ fn void load_modules(FileProtocol* root) {
 		FileProtocol* moduleFile;
 		@catch(modulesDir.open(&moduleFile, &info.filename, FileOpenMode.READ, 0));
 
+		usz moduleSz = info.fileSize;
 		usz pagesSz = memory::@pages(info.fileSize);
 		void* moduleBuf = boson::mem.alloc_pages(pagesSz);
-		@catch(moduleFile.read(&bufSz, moduleBuf));
+		@catch(moduleFile.read(&moduleSz, moduleBuf));
 
 		boson::add_memory_entry((uptr)moduleBuf, 0, pagesSz*memory::PAGE_SIZE, MODULE);
 		
@@ -73,6 +74,7 @@ fn void load_modules(FileProtocol* root) {
 		};
 
 		boson::console.printn(" done @ %x", moduleBuf);
+		moduleFile.close();
 	}
 
 	if (info != null) boson::mem.free(info);
