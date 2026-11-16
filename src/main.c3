@@ -15,7 +15,7 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 	@catch(table.runtimeServices.get_time(&bootTime, null));
 
 	console.clear();
-	console.printn("Boson Bootloader for Muon Kernel");
+	console.printn("Boson Bootloader for Muon Kernel - v" +++ $$PROJECT_VERSION);
 	boson::@print_time(bootTime);
 	console.print_newline();
 
@@ -40,7 +40,7 @@ fn EfiStatus efi_main(EfiHandle handle, SystemTable* table) @export("efi_main") 
 	void* kernelBuf = file::load(kernelFile, kernelInfo);
 	bootloader::prepare_page_table();
 
-	const usz BIB_SIZE = 1; // pages
+	const usz BIB_SIZE = 2; // pages
 	BibBuilder builder = protocol::builder::init((uptr)mem.alloc_pages(BIB_SIZE, true), BIB_SIZE*memory::PAGE_SIZE);
 	if (catch f = mem.map(kernelRootPage, builder.bib, (uptr)builder.bib, BIB_SIZE)) {
 		console.printn("Could not map boot info block into memory, reason %s", f.description);
