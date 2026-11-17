@@ -66,33 +66,6 @@ Boson is an early-stage project developed for the Muon Kernel; it is not current
 
 ## Specification
 
-The current specification is a minimal proof-of-concept and **must not** be considered production ready.
-The protocol might undergo heavy changes and refactorizations.
+The current specification revision is **`1.0`**.
 
-Once control is transferred to the kernel, the following are to be expected:
-- Each program of the binary is loaded at its specified VMA
-- `rip` is the entry point defined in the ELF binary
-- `rsp` is `0xFFFFFFFF40003FF8`
-- `rbp` is `0xFFFFFFFF40004000`
-- `cs`, `ds`, `ss` and other selector registers are left untouched (UEFI defaults)
-- The GDT is in an undefined state
-- The IDT is in an undefined state; interrupts are disabled
-- Paging is active with a PML4 root page; ELF programs, bootloader payload, trampoline, memory regions map and the lowest 2MB of physical memory are mapped; `cr3` contains the physical address of such page table
-- `rdi` contains a pointer to a `BootloaderPayload` structure, defined below
-
-### Bootloader Payload Structure
-```c3
-struct BootloaderPayload {
-	uptr pageTablePtr;
-	BootloaderKernelStack stack;
-	MemoryRegion* memoryRegionMap;
-	uint memoryRegionEntries;
-	ulong totalMemoryBytes;
-
-	// vendor tables
-	uptr rsdpAddr;
-}
-```
-
-The `rsdpAddr` field is a pointer to the RSDP table. 
-See [here](src/modules/boson.c3i) for all the related definitions. 
+See [SPECIFICATION.md](./SPECIFICATION.md) for full details.
