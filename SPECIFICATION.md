@@ -7,6 +7,24 @@ Specifically made for the [**Boson Bootloader**](./README.md) and the [**Muon Ke
 
 The official specification for the Boson Boot Protocol is written in C3 and it's implicitly backward-compatible with C and C++.
 
+## Protocol Revision
+
+The current specification revision is **`1.0`**.
+
+Revision is computed as `(major << 24) | minor` or, alternatively, using the `BibRevision` bitstruct. Both representations are equivalent.
+
+```c3
+bitstruct BibRevision : uint {
+	char major : 24..31;
+	ushort minor : 0..15;
+}
+```
+Bits layout is as follow:
+- **Major (8 bit)**: Architectural change (1.x → 2.0 breaks compatibility)
+- **Minor (16 bit)**: New optional tags (1.0 → 1.1 is compatible)
+
+Bits 16 to 23 are reserved and should always be set to 0.
+
 # Protocol Architecture
 The Boson Boot Protocol generates a single contiguous memory region called **Boot Information Block**, or BIB for short. 
 The kernel should read all the information needed and mark the BIB region as usable memory as soon as possible to reclaim it.
@@ -30,10 +48,6 @@ Each member of the Boot Information Block is defined as follows:
 - `totalSize` – Total size of the BIB in bytes, including the header and the tags. Minimum is 40 bytes (BIB header + Terminator tag)
 - `flags` – Control bits for future behaviour. Bit 0 is reserved and must be 0.
 - `tags` – Start of BIB tags, contiguous allocated array of heterogeneous structures.
-
-**Protocol Revision**: `(major << 24) | minor`
-- **Major (8 bit)**: Architectural change (1.x → 2.0 breaks compatibility)
-- **Minor (16 bit)**: New optional tags (1.0 → 1.1 is compatible)
 
 ### Tag Header Structure
 Information is passed from the bootloader to the kernel via a Tag structure.
@@ -205,8 +219,6 @@ struct TagUnwindInfo {
 
 # Protocol Semantics
 
-The current specification revision is **`1.0`**.
-
 ## Machine State at Entry
 
 Once control is transferred to the kernel, the following are to be expected:
@@ -219,4 +231,3 @@ Once control is transferred to the kernel, the following are to be expected:
 - The GDT is in an undefined state
 - The IDT is in an undefined state; interrupts are disabled
 - Paging is active with a PML4 root page; ELF programs, bootloader payload, trampoline, memory regions map and the lowest 2MB of physical memory are mapped; `cr3` contains the physical address of such page table
-
